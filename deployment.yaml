@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: simple-app
-        image: mernacr123321.azurecr.io/backend-app:v1
+        image: mernacr123321.azurecr.io/simple-app:latest
         ports:
         - containerPort: 4000

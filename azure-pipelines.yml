@@ -34,7 +34,7 @@ stages:
         tags: |
           latest
 
-# ✅ DEPLOY (ENABLED 🚀)
+# ✅ DEPLOY
 - stage: Deploy
   displayName: Deploy to AKS
   dependsOn: Build
@@ -51,63 +51,7 @@ stages:
             inputs:
               connectionType: 'Kubernetes Service Connection'
               kubernetesServiceEndpoint: 'AKS-Service-Connection'
-              namespace: 'default'   # or 'prod'
-              command: apply
-              useConfigurationFile: true
-              trigger:
-- main
-
-pool:
-  name: 'Default'
-
-variables:
-  imageName: 'simple-app'
-  acrName: 'mernacr123321'
-
-stages:
-
-# ✅ BUILD
-- stage: Build
-  displayName: Build and Push Image
-  jobs:
-  - job: BuildJob
-    steps:
-
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-
-    - script: npm install
-      displayName: Install Dependencies
-
-    - task: Docker@2
-      displayName: Build and Push Docker Image
-      inputs:
-        containerRegistry: 'ACR-Service-Connection'
-        repository: 'simple-app'
-        command: 'buildAndPush'
-        Dockerfile: 'Dockerfile'
-        tags: |
-          latest
-
-# ✅ DEPLOY (ENABLED 🚀)
-- stage: Deploy
-  displayName: Deploy to AKS
-  dependsOn: Build
-  jobs:
-  - deployment: DeployJob
-    environment: prod-env
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-
-          - task: Kubernetes@1
-            displayName: Deploy to AKS
-            inputs:
-              connectionType: 'Kubernetes Service Connection'
-              kubernetesServiceEndpoint: 'AKS-Service-Connection'
-              namespace: 'default'   # or 'prod'
+              namespace: 'prod'   # ✅ IMPORTANT (match your deployment)
               command: apply
               useConfigurationFile: true
               configuration: '**/*.yaml'
