@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 
 app.get("/", (req, res) => {
-    res.send("🚀 Hello from AKS Pipeline App!");
+    res.send("🚀 Hello from AKS Pipeline App! automatically code change is working ");
 });
 
 const PORT = 4000;
