@@ -34,11 +34,26 @@ stages:
         tags: |
           latest
 
-# ✅ DEPLOY (DISABLED)
+# ✅ DEPLOY (ENABLED 🚀)
 - stage: Deploy
-  displayName: Deploy Stage
+  displayName: Deploy to AKS
   dependsOn: Build
   jobs:
-  - job: SkipDeploy
-    steps:
-    - script: echo "Deploy skipped"
+  - deployment: DeployJob
+    environment: prod-env
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - task: Kubernetes@1
+            displayName: Deploy to AKS
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'AKS-Service-Connection'
+              namespace: 'default'   # or 'prod'
+              command: apply
+              useConfigurationFile: true
+              configuration: |
+                deployment.yaml
+                service.yaml
