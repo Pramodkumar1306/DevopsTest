@@ -17,6 +17,11 @@ stages:
   - job: BuildJob
     steps:
 
+    - checkout: self   # 🔥 IMPORTANT (fetch repo)
+
+    - script: ls -la   # 🔥 DEBUG (see files)
+      displayName: Check Files
+
     - task: NodeTool@0
       inputs:
         versionSpec: '18.x'
@@ -46,12 +51,19 @@ stages:
         deploy:
           steps:
 
+          - checkout: self   # 🔥 IMPORTANT AGAIN
+
+          - script: ls -la   # 🔥 DEBUG (must show yaml files)
+            displayName: Check Deployment Files
+
           - task: Kubernetes@1
             displayName: Deploy to AKS
             inputs:
               connectionType: 'Kubernetes Service Connection'
               kubernetesServiceEndpoint: 'AKS-Service-Connection'
-              namespace: 'prod'   # ✅ IMPORTANT (match your deployment)
+              namespace: 'prod'
               command: apply
               useConfigurationFile: true
-              configuration: '**/*.yaml'
+              configuration: |
+                deployment.yaml
+                service.yaml

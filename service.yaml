@@ -1,20 +1,13 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
   name: simple-app
   namespace: prod
 spec:
-  replicas: 1
+  type: LoadBalancer
   selector:
-    matchLabels:
-      app: simple-app
-  template:
-    metadata:
-      labels:
-        app: simple-app
-    spec:
-      containers:
-      - name: simple-app
-        image: mernacr123321.azurecr.io/simple-app:latest
-        ports:
-        - containerPort: 4000
+    app: simple-app
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
