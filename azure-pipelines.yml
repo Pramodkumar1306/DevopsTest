@@ -64,6 +64,4 @@ stages:
               namespace: 'prod'
               command: apply
               useConfigurationFile: true
-              configuration: |
-                deployment.yaml
-                service.yaml
+              configuration: 'deployment.yaml,service.yaml'
