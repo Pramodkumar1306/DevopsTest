@@ -54,8 +54,12 @@ stages:
 
           - checkout: self
 
-          - script: ls -la
-            displayName: Check Deployment Files
+          - script: |
+              echo "Current Path:"
+              pwd
+              echo "Files:"
+              ls -la
+            displayName: FINAL DEBUG
 
           - task: Kubernetes@1
             displayName: Deploy to AKS
@@ -65,4 +69,4 @@ stages:
               namespace: 'prod'
               command: apply
               useConfigurationFile: true
-              configuration: 'deployment.yaml service.yaml'
+              configuration: '$(System.DefaultWorkingDirectory)/deployment.yaml'
