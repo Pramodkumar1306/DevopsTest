@@ -17,9 +17,9 @@ stages:
   - job: BuildJob
     steps:
 
-    - checkout: self   # 🔥 IMPORTANT (fetch repo)
+    - checkout: self
 
-    - script: ls -la   # 🔥 DEBUG (see files)
+    - script: ls -la
       displayName: Check Files
 
     - task: NodeTool@0
@@ -39,6 +39,7 @@ stages:
         tags: |
           latest
 
+
 # ✅ DEPLOY
 - stage: Deploy
   displayName: Deploy to AKS
@@ -51,9 +52,9 @@ stages:
         deploy:
           steps:
 
-          - checkout: self   # 🔥 IMPORTANT AGAIN
+          - checkout: self
 
-          - script: ls -la   # 🔥 DEBUG (must show yaml files)
+          - script: ls -la
             displayName: Check Deployment Files
 
           - task: Kubernetes@1
@@ -64,4 +65,6 @@ stages:
               namespace: 'prod'
               command: apply
               useConfigurationFile: true
-              configuration: 'deployment.yaml,service.yaml'
+              configuration: |
+                deployment.yaml
+                service.yaml
