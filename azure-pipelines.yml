@@ -34,7 +34,7 @@ stages:
       displayName: Build and Push Docker Image
       inputs:
         containerRegistry: 'ACR-Service-Connection'
-        repository: 'mernacr123321.azurecr.io/simple-app'
+        repository: 'simple-app'
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
