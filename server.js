@@ -3,6 +3,7 @@ const { Pool } = require("pg");
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // 🔥 PostgreSQL Connection
 const pool = new Pool({
@@ -19,120 +20,101 @@ app.use((req, res, next) => {
     next();
 });
 
-// 🚀 Home Route (UI)
-app.get("/", (req, res) => {
+// 🚀 UI PAGE
+app.get("/", async (req, res) => {
+    const result = await pool.query("SELECT * FROM users ORDER BY id");
 
-    const currentTime = new Date().toLocaleString();
-    const version = "v3.0.0";
+    let rows = result.rows.map(user => `
+        <tr>
+            <td>${user.id}</td>
+            <td>${user.name}</td>
+            <td>
+                <form method="POST" action="/delete/${user.id}" style="display:inline;">
+                    <button>❌ Delete</button>
+                </form>
+            </td>
+        </tr>
+    `).join("");
 
     res.send(`
         <html>
         <head>
-            <title>AKS Pipeline + DB App</title>
+            <title>CRUD App</title>
             <style>
                 body {
-                    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+                    font-family: Arial;
+                    background: #1e3c72;
                     color: white;
-                    font-family: 'Segoe UI';
                     text-align: center;
-                    padding-top: 80px;
                 }
-                .card {
-                    background: rgba(255,255,255,0.1);
-                    padding: 20px;
-                    border-radius: 15px;
-                    width: 60%;
+                table {
                     margin: auto;
+                    border-collapse: collapse;
+                    width: 50%;
                 }
-                a {
-                    color: #00c6ff;
-                    display: block;
-                    margin: 10px;
+                th, td {
+                    border: 1px solid white;
+                    padding: 10px;
+                }
+                input {
+                    padding: 8px;
+                    margin: 5px;
+                }
+                button {
+                    padding: 8px 15px;
+                    cursor: pointer;
+                }
+                .box {
+                    margin: 20px;
                 }
             </style>
         </head>
         <body>
-            <h1>🚀 AKS CI/CD + DB Connected</h1>
 
-            <div class="card">
-                <p>✅ Deployment: SUCCESS</p>
-                <p>📦 Version: ${version}</p>
-                <p>⏱ ${currentTime}</p>
+            <h1>🚀 AKS CRUD App</h1>
 
-                <h3>🔥 CRUD Operations</h3>
-                <a href="/init">Create Table</a>
-                <a href="/add">Insert Data</a>
-                <a href="/users">View Data</a>
-                <a href="/update">Update Data</a>
-                <a href="/delete">Delete Data</a>
+            <div class="box">
+                <form method="POST" action="/add">
+                    <input type="text" name="name" placeholder="Enter Name" required />
+                    <button>Add User</button>
+                </form>
             </div>
+
+            <h2>Users</h2>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+                ${rows}
+            </table>
+
         </body>
         </html>
     `);
 });
 
-// 🔥 Create Table
-app.get("/init", async (req, res) => {
-    try {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(50)
-            )
-        `);
-        res.send("✅ Table Created");
-    } catch (err) {
-        res.send(err.message);
-    }
+// ➕ ADD
+app.post("/add", async (req, res) => {
+    const { name } = req.body;
+    await pool.query("INSERT INTO users (name) VALUES ($1)", [name]);
+    res.redirect("/");
 });
 
-// 🔥 INSERT
-app.get("/add", async (req, res) => {
-    try {
-        await pool.query("INSERT INTO users (name) VALUES ('Spark')");
-        res.send("✅ Data Inserted");
-    } catch (err) {
-        res.send(err.message);
-    }
+// ❌ DELETE
+app.post("/delete/:id", async (req, res) => {
+    const { id } = req.params;
+    await pool.query("DELETE FROM users WHERE id=$1", [id]);
+    res.redirect("/");
 });
 
-// 🔥 READ
-app.get("/users", async (req, res) => {
-    try {
-        const result = await pool.query("SELECT * FROM users");
-        res.json(result.rows);
-    } catch (err) {
-        res.send(err.message);
-    }
-});
-
-// 🔥 UPDATE
-app.get("/update", async (req, res) => {
-    try {
-        await pool.query("UPDATE users SET name='Updated' WHERE id=1");
-        res.send("✅ Updated");
-    } catch (err) {
-        res.send(err.message);
-    }
-});
-
-// 🔥 DELETE
-app.get("/delete", async (req, res) => {
-    try {
-        await pool.query("DELETE FROM users WHERE id=1");
-        res.send("✅ Deleted");
-    } catch (err) {
-        res.send(err.message);
-    }
-});
-
-// 🌍 Health Check
+// 🌍 Health
 app.get("/health", (req, res) => {
     res.json({ status: "OK" });
 });
 
 const PORT = 4000;
-
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
