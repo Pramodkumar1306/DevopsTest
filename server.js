@@ -1,17 +1,17 @@
 const express = require("express");
-const { Pool } = require("pg");
+// const { Pool } = require("pg");
 
 const app = express();
 app.use(express.json());
 
 // 🔥 PostgreSQL Connection
-const pool = new Pool({
-    user: "pammu",
-    host: "postgres-service",   // 🔥 IMPORTANT (K8s service name)
-    database: "testdb",
-    password: "pammu123",
-    port: 5432
-});
+// const pool = new Pool({
+//     user: "pammu",
+//     host: "postgres-service",   // 🔥 IMPORTANT (K8s service name)
+//     database: "testdb",
+//     password: "pammu123",
+//     port: 5432
+// });
 
 // 🌟 Middleware
 app.use((req, res, next) => {
