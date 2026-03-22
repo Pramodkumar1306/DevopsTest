@@ -37,7 +37,7 @@ stages:
         command: 'buildAndPush'
         Dockerfile: 'Dockerfile'
         tags: |
-          latest
+          $(Build.BuildId)   # ✅ CHANGED (no more latest)
 
 
 # ✅ DEPLOY
@@ -61,6 +61,7 @@ stages:
               ls -la
             displayName: FINAL DEBUG
 
+          # ✅ Apply Deployment YAML
           - task: Kubernetes@1
             displayName: Deploy to AKS
             inputs:
@@ -70,3 +71,8 @@ stages:
               command: apply
               useConfigurationFile: true
               configuration: '$(System.DefaultWorkingDirectory)/deployment.yaml'
+
+          # 🔥 NEW STEP (IMPORTANT → auto update image)
+          - script: |
+              kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n prod
+            displayName: Update Image in AKS
