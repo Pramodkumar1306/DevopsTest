@@ -69,7 +69,7 @@ stages:
             inputs:
               connectionType: 'Kubernetes Service Connection'
               kubernetesServiceEndpoint: 'AKS-Service-Connection'
-              namespace: 'prod'
+              namespace: 'default'
               command: apply
               useConfigurationFile: true
               configuration: '$(System.DefaultWorkingDirectory)/deployment.yaml'
