@@ -48,7 +48,7 @@ app.get("/", (req, res) => {
                 <h1>🚀 AKS CI/CD Pipeline Success</h1>
                 <p>Automatic Deployment is Working Perfectly ✅</p>
                 <p>Code changes are reflected instantly 🔄</p>
-                <div class="badge">🔥 Azure DevOps + Docker + AKS 🔥</div>
+                <div class="badge">🔥 Azure DevOps + Docker + AKS Something Updated 🔥</div>
             </body>
         </html>
     `);
