@@ -90,6 +90,7 @@ app.get("/", (req, res) => {
                     <h1 class="pulse">🚀 AKS CI/CD Pipeline</h1>
 
                     <div class="card">
+                    <p> 🎉 Welcome to the AKS Pipeline App! 🎉</p>
                         <p>✅ Deployment Status: <b>SUCCESS</b></p>
                         <p>🔄 Auto Deployment: <b>Working Perfectly</b></p>
                         <p>📦 Version: <b>${version}</b></p>
