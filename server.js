@@ -7,7 +7,7 @@ app.use(express.json());
 // 🔥 PostgreSQL Connection
 const pool = new Pool({
     user: "pammu",
-    host: "postgres-service",   // 🔥 IMPORTANT (K8s service name)
+    host: "postgres-service.default.svc.cluster.local",
     database: "testdb",
     password: "pammu123",
     port: 5432
