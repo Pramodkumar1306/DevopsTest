@@ -29,15 +29,16 @@ stages:
     - script: npm install
       displayName: Install Dependencies
 
+    # 🔥 FIXED DOCKER TASK
     - task: Docker@2
       displayName: Build and Push Docker Image
       inputs:
         containerRegistry: 'ACR-Service-Connection'
-        repository: 'simple-app'
+        repository: 'mernacr123321.azurecr.io/simple-app'   # ✅ FIXED
         command: 'buildAndPush'
-        Dockerfile: 'Dockerfile'
+        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'  # ✅ FIXED
         tags: |
-          $(Build.BuildId)   # ✅ CHANGED (no more latest)
+          $(Build.BuildId)
 
 
 # ✅ DEPLOY
@@ -72,7 +73,7 @@ stages:
               useConfigurationFile: true
               configuration: '$(System.DefaultWorkingDirectory)/deployment.yaml'
 
-          # 🔥 NEW STEP (IMPORTANT → auto update image)
+          # 🔥 AUTO UPDATE IMAGE (NO MANUAL RESTART)
           - script: |
               kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n prod
             displayName: Update Image in AKS
