@@ -54,6 +54,7 @@ stages:
           steps:
 
           - checkout: self
+            clean: true
 
           - script: |
               echo "Current Path:"
