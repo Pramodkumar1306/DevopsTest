@@ -18,6 +18,7 @@ stages:
     steps:
 
     - checkout: self
+      clean: true
 
     - script: ls -la
       displayName: Check Files
