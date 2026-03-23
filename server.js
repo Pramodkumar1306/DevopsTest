@@ -30,7 +30,7 @@ app.get("/", async (req, res) => {
             <td>${user.name}</td>
             <td>
                 <form method="POST" action="/delete/${user.id}" style="display:inline;">
-                    <button>❌ Delete</button>
+                    <button>❌ Delete User</button>
                 </form>
             </td>
         </tr>
@@ -71,7 +71,8 @@ app.get("/", async (req, res) => {
         </head>
         <body>
 
-            <h1>🚀 AKS CRUD App</h1>
+            <!-- 🔥 VERSION CHANGE -->
+            <h1>🚀 AKS CRUD App - VERSION 75 ✅</h1>
 
             <div class="box">
                 <form method="POST" action="/add">
