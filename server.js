@@ -39,145 +39,199 @@ app.get("/", async (req, res) => {
     res.send(`
 <html>
 <head>
-    <title>AKS CRUD App</title>
+<title>AKS CRUD App</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #141e30, #243b55);
-            color: white;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
+    margin: 0;
+}
 
-        h1 {
-            margin-top: 30px;
-            font-size: 2.8rem;
-            background: linear-gradient(90deg, #00dbde, #fc00ff);
-            -webkit-background-clip: text;
-            color: transparent;
-        }
+/* 🔥 NAVBAR */
+.navbar {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+}
 
-        .container {
-            width: 70%;
-            margin: auto;
-        }
+.logo {
+    font-size: 20px;
+    font-weight: bold;
+    color: #00dbde;
+}
 
-        .card {
-            background: rgba(255,255,255,0.08);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            margin-top: 20px;
-            animation: fadeIn 1s ease;
-        }
+/* HEADER */
+.header {
+    text-align: center;
+    margin-top: 20px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-        }
+.header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(90deg, #00dbde, #fc00ff);
+    -webkit-background-clip: text;
+    color: transparent;
+}
 
-        th {
-            background: #00c6ff;
-            color: black;
-        }
+/* CONTAINER */
+.container {
+    width: 70%;
+    margin: auto;
+}
 
-        th, td {
-            padding: 12px;
-        }
+/* CARD */
+.card {
+    background: rgba(255,255,255,0.08);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    margin-top: 20px;
+    animation: fadeIn 1s ease;
+}
 
-        tr:nth-child(even) {
-            background: rgba(255,255,255,0.05);
-        }
+/* INPUT */
+input {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    width: 60%;
+}
 
-        tr:hover {
-            background: rgba(255,255,255,0.15);
-            transition: 0.3s;
-        }
+/* BUTTONS */
+.btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
 
-        input {
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-            width: 60%;
-        }
+.add-btn {
+    background: linear-gradient(135deg, #00ff87, #60efff);
+    color: black;
+}
 
-        .btn {
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
+.delete-btn {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white;
+}
 
-        .add-btn {
-            background: linear-gradient(135deg, #00ff87, #60efff);
-            color: black;
-        }
+.btn:hover {
+    transform: scale(1.1);
+}
 
-        .delete-btn {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            color: white;
-        }
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
 
-        .btn:hover {
-            transform: scale(1.1);
-        }
+th {
+    background: #00c6ff;
+    color: black;
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+th, td {
+    padding: 12px;
+}
 
-        .footer {
-            margin-top: 30px;
-            font-size: 14px;
-            opacity: 0.7;
-        }
-    </style>
+tr:nth-child(even) {
+    background: rgba(255,255,255,0.05);
+}
+
+tr:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* SEARCH */
+.search-box {
+    margin-top: 15px;
+}
+
+/* FOOTER */
+.footer {
+    text-align: center;
+    margin: 20px;
+    opacity: 0.7;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(-20px);}
+    to {opacity:1; transform:translateY(0);}
+}
+</style>
+
+<script>
+function filterUsers() {
+    let input = document.getElementById("search").value.toLowerCase();
+    let rows = document.querySelectorAll("table tr");
+
+    rows.forEach((row, index) => {
+        if(index === 0) return;
+        let name = row.children[1].innerText.toLowerCase();
+        row.style.display = name.includes(input) ? "" : "none";
+    });
+}
+</script>
+
 </head>
 
 <body>
 
-    <h1>🚀 AKS CRUD App - VERSION 100 🔥</h1>
+<!-- 🔥 NAVBAR -->
+<div class="navbar">
+    <div class="logo">🚀 AKS App</div>
+    <div>Users: ${result.rows.length}</div>
+</div>
 
-    <div class="container">
+<!-- HEADER -->
+<div class="header">
+    <h1>AKS CRUD Dashboard 🔥</h1>
+</div>
 
-        <!-- ADD USER -->
-        <div class="card">
-            <form method="POST" action="/add">
-                <input type="text" name="name" placeholder="Enter user name..." required />
-                <button class="btn add-btn">➕ Add User</button>
-            </form>
-        </div>
+<div class="container">
 
-        <!-- USERS TABLE -->
-        <div class="card">
-            <h2>📋 Users List</h2>
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Action</th>
-                </tr>
-                ${rows}
-            </table>
-        </div>
-
-        <div class="footer">
-            ⚡ Azure DevOps + Docker + AKS ⚡
-        </div>
-
+    <!-- ADD USER -->
+    <div class="card">
+        <form method="POST" action="/add">
+            <input type="text" name="name" placeholder="Enter name..." required />
+            <button class="btn add-btn">➕ Add</button>
+        </form>
     </div>
+
+    <!-- SEARCH -->
+    <div class="card">
+        <input type="text" id="search" placeholder="🔍 Search user..." onkeyup="filterUsers()" />
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+        <h2>📋 Users List</h2>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+            ${rows}
+        </table>
+    </div>
+
+</div>
+
+<div class="footer">
+⚡ Azure DevOps + Docker + AKS ⚡
+</div>
 
 </body>
 </html>
