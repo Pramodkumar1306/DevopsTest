@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: simple-app
-        image: mernacr123321.azurecr.io/simple-app:latest
+        image: mernacr123321.azurecr.io/simple-app:$(Build.BuildId)
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
