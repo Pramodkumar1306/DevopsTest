@@ -43,7 +43,7 @@ stages:
 
 # ✅ DEV DEPLOY
 - stage: Dev
-  displayName: Deploy to Dev
+  displayName: Dev
   dependsOn: Build
   jobs:
   - deployment: DeployDev
@@ -74,7 +74,7 @@ stages:
 
 # ✅ PROD DEPLOY
 - stage: Prod
-  displayName: Deploy to Prod
+  displayName: Prod
   dependsOn: Dev
   jobs:
   - deployment: DeployProd
