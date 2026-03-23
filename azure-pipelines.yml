@@ -64,7 +64,9 @@ stages:
               namespace: 'dev'
               command: apply
               useConfigurationFile: true
-              configuration: '$(System.DefaultWorkingDirectory)/k8s.yaml'          - script: |
+              configuration: '$(System.DefaultWorkingDirectory)/k8s.yaml'
+
+          - script: |
               kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n dev
               kubectl rollout status deployment simple-app -n dev
             displayName: Update Image in DEV
@@ -93,7 +95,9 @@ stages:
               namespace: 'prod'
               command: apply
               useConfigurationFile: true
-              configuration: '$(System.DefaultWorkingDirectory)/k8s.yaml'          - script: |
+              configuration: '$(System.DefaultWorkingDirectory)/k8s.yaml'
+
+          - script: |
               kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n prod
               kubectl rollout status deployment simple-app -n prod
             displayName: Update Image in PROD
