@@ -41,12 +41,43 @@ stages:
           $(Build.BuildId)
 
 
-# ✅ DEPLOY
-- stage: Deploy
-  displayName: Deploy to AKS
+# ✅ DEV DEPLOY
+- stage: Dev
+  displayName: Deploy to Dev
   dependsOn: Build
   jobs:
-  - deployment: DeployJob
+  - deployment: DeployDev
+    environment: dev-env
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - checkout: self
+            clean: true
+
+          - task: Kubernetes@1
+            displayName: Deploy to AKS (DEV)
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'AKS-Service-Connection'
+              namespace: 'dev'
+              command: apply
+              useConfigurationFile: true
+              configuration: '$(System.DefaultWorkingDirectory)/deployment.yaml'
+
+          - script: |
+              kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n dev
+              kubectl rollout status deployment simple-app -n dev
+            displayName: Update Image in DEV
+
+
+# ✅ PROD DEPLOY
+- stage: Prod
+  displayName: Deploy to Prod
+  dependsOn: Dev
+  jobs:
+  - deployment: DeployProd
     environment: prod-env
     strategy:
       runOnce:
@@ -56,26 +87,17 @@ stages:
           - checkout: self
             clean: true
 
-          - script: |
-              echo "Current Path:"
-              pwd
-              echo "Files:"
-              ls -la
-            displayName: FINAL DEBUG
-
-          # ✅ Apply Deployment YAML
           - task: Kubernetes@1
-            displayName: Deploy to AKS
+            displayName: Deploy to AKS (PROD)
             inputs:
               connectionType: 'Kubernetes Service Connection'
               kubernetesServiceEndpoint: 'AKS-Service-Connection'
-              namespace: 'default'
+              namespace: 'prod'
               command: apply
               useConfigurationFile: true
               configuration: '$(System.DefaultWorkingDirectory)/deployment.yaml'
 
-          # 🔥 FINAL AUTO UPDATE (IMPORTANT)
           - script: |
-              kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n default
-              kubectl rollout status deployment simple-app -n default
-            displayName: Update Image in AKS
+              kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n prod
+              kubectl rollout status deployment simple-app -n prod
+            displayName: Update Image in PROD
