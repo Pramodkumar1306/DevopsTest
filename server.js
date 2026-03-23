@@ -29,107 +29,140 @@ app.get("/", async (req, res) => {
             <td>${user.id}</td>
             <td>${user.name}</td>
             <td>
-                <form method="POST" action="/delete/${user.id}" style="display:inline;">
-                    <button>❌ Delete User</button>
+                <form method="POST" action="/delete/${user.id}">
+                    <button class="btn delete-btn">❌ Delete</button>
                 </form>
             </td>
         </tr>
     `).join("");
 
     res.send(`
-        <html>
-        <head>
-            <title>CRUD App</title>
-            <style>
-                    body {
-                        font-family: 'Segoe UI', Arial;
-                        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-                        color: white;
-                        text-align: center;
-                        margin: 0;
-                        padding: 0;
-                    }
+<html>
+<head>
+    <title>AKS CRUD App</title>
 
-                    h1 {
-                        margin-top: 30px;
-                        font-size: 2.5rem;
-                        color: #00e6e6;
-                    }
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-                    h2 {
-                        color: #ffd369;
-                    }
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #141e30, #243b55);
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
 
-                    .box {
-                        margin: 20px auto;
-                        padding: 20px;
-                        width: 40%;
-                        background: rgba(255, 255, 255, 0.1);
-                        border-radius: 15px;
-                        backdrop-filter: blur(10px);
-                    }
+        h1 {
+            margin-top: 30px;
+            font-size: 2.8rem;
+            background: linear-gradient(90deg, #00dbde, #fc00ff);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
 
-                    table {
-                        margin: 20px auto;
-                        border-collapse: collapse;
-                        width: 60%;
-                        background: rgba(255, 255, 255, 0.1);
-                        border-radius: 10px;
-                        overflow: hidden;
-                    }
+        .container {
+            width: 70%;
+            margin: auto;
+        }
 
-                    th {
-                        background: #00adb5;
-                        color: black;
-                    }
+        .card {
+            background: rgba(255,255,255,0.08);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-top: 20px;
+            animation: fadeIn 1s ease;
+        }
 
-                    th, td {
-                        padding: 12px;
-                        border-bottom: 1px solid rgba(255,255,255,0.2);
-                    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
 
-                    tr:hover {
-                        background: rgba(255,255,255,0.1);
-                    }
+        th {
+            background: #00c6ff;
+            color: black;
+        }
 
-                    input {
-                        padding: 10px;
-                        margin: 5px;
-                        border-radius: 8px;
-                        border: none;
-                        outline: none;
-                    }
+        th, td {
+            padding: 12px;
+        }
 
-                    button {
-                        padding: 10px 18px;
-                        border: none;
-                        border-radius: 8px;
-                        background: linear-gradient(135deg, #00c6ff, #0072ff);
-                        color: white;
-                        font-weight: bold;
-                        cursor: pointer;
-                        transition: 0.3s;
-                    }
+        tr:nth-child(even) {
+            background: rgba(255,255,255,0.05);
+        }
 
-                    button:hover {
-                        transform: scale(1.05);
-                        background: linear-gradient(135deg, #ff7e5f, #feb47b);
-                    }
-                </style>
-        </head>
-        <body>
+        tr:hover {
+            background: rgba(255,255,255,0.15);
+            transition: 0.3s;
+        }
 
-            <!-- 🔥 VERSION CHANGE -->
-            <h1>🚀 AKS CRUD App - VERSION 75 ✅</h1>
+        input {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            width: 60%;
+        }
 
-            <div class="box">
-                <form method="POST" action="/add">
-                    <input type="text" name="name" placeholder="Enter Name" required />
-                    <button>Add User</button>
-                </form>
-            </div>
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
 
-            <h2>Users</h2>
+        .add-btn {
+            background: linear-gradient(135deg, #00ff87, #60efff);
+            color: black;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🚀 AKS CRUD App - VERSION 100 🔥</h1>
+
+    <div class="container">
+
+        <!-- ADD USER -->
+        <div class="card">
+            <form method="POST" action="/add">
+                <input type="text" name="name" placeholder="Enter user name..." required />
+                <button class="btn add-btn">➕ Add User</button>
+            </form>
+        </div>
+
+        <!-- USERS TABLE -->
+        <div class="card">
+            <h2>📋 Users List</h2>
             <table>
                 <tr>
                     <th>ID</th>
@@ -138,10 +171,17 @@ app.get("/", async (req, res) => {
                 </tr>
                 ${rows}
             </table>
+        </div>
 
-        </body>
-        </html>
-    `);
+        <div class="footer">
+            ⚡ Azure DevOps + Docker + AKS ⚡
+        </div>
+
+    </div>
+
+</body>
+</html>
+`);
 });
 
 // ➕ ADD
