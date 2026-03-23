@@ -15,17 +15,19 @@ spec:
       containers:
       - name: simple-app
         image: mernacr123321.azurecr.io/simple-app
+        imagePullPolicy: Always
         ports:
         - containerPort: 4000
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: simple-app
 spec:
+  type: LoadBalancer   # 🔥 UPDATED (IMPORTANT)
   selector:
     app: simple-app
   ports:
   - port: 80
     targetPort: 4000
-  type: ClusterIP
