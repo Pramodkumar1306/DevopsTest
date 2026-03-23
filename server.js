@@ -30,7 +30,7 @@ app.get("/", async (req, res) => {
             <td>${user.name}</td>
             <td>
                 <form method="POST" action="/delete/${user.id}" style="display:inline;">
-                    <button>❌ Delete data</button>
+                    <button>❌ Delete data type</button>
                 </form>
             </td>
         </tr>
