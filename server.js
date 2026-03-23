@@ -41,33 +41,81 @@ app.get("/", async (req, res) => {
         <head>
             <title>CRUD App</title>
             <style>
-                body {
-                    font-family: Arial;
-                    background: #1e3c72;
-                    color: white;
-                    text-align: center;
-                }
-                table {
-                    margin: auto;
-                    border-collapse: collapse;
-                    width: 50%;
-                }
-                th, td {
-                    border: 1px solid white;
-                    padding: 10px;
-                }
-                input {
-                    padding: 8px;
-                    margin: 5px;
-                }
-                button {
-                    padding: 8px 15px;
-                    cursor: pointer;
-                }
-                .box {
-                    margin: 20px;
-                }
-            </style>
+                    body {
+                        font-family: 'Segoe UI', Arial;
+                        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+                        color: white;
+                        text-align: center;
+                        margin: 0;
+                        padding: 0;
+                    }
+
+                    h1 {
+                        margin-top: 30px;
+                        font-size: 2.5rem;
+                        color: #00e6e6;
+                    }
+
+                    h2 {
+                        color: #ffd369;
+                    }
+
+                    .box {
+                        margin: 20px auto;
+                        padding: 20px;
+                        width: 40%;
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 15px;
+                        backdrop-filter: blur(10px);
+                    }
+
+                    table {
+                        margin: 20px auto;
+                        border-collapse: collapse;
+                        width: 60%;
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 10px;
+                        overflow: hidden;
+                    }
+
+                    th {
+                        background: #00adb5;
+                        color: black;
+                    }
+
+                    th, td {
+                        padding: 12px;
+                        border-bottom: 1px solid rgba(255,255,255,0.2);
+                    }
+
+                    tr:hover {
+                        background: rgba(255,255,255,0.1);
+                    }
+
+                    input {
+                        padding: 10px;
+                        margin: 5px;
+                        border-radius: 8px;
+                        border: none;
+                        outline: none;
+                    }
+
+                    button {
+                        padding: 10px 18px;
+                        border: none;
+                        border-radius: 8px;
+                        background: linear-gradient(135deg, #00c6ff, #0072ff);
+                        color: white;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: 0.3s;
+                    }
+
+                    button:hover {
+                        transform: scale(1.05);
+                        background: linear-gradient(135deg, #ff7e5f, #feb47b);
+                    }
+                </style>
         </head>
         <body>
 
