@@ -27,6 +27,7 @@ stages:
     - script: npm install
       displayName: Install Dependencies
 
+    # 🔥 FIXED DOCKER TASK
     - task: Docker@2
       displayName: Build and Push Docker Image
       inputs:
@@ -36,6 +37,12 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(Build.BuildId)
+          latest
+
+    # 🔥 DEBUG (IMPORTANT)
+    - script: |
+        echo "Image pushed with tag: $(Build.BuildId)"
+      displayName: Debug Image Tag
 
 
 # ✅ DEV DEPLOY
@@ -63,7 +70,6 @@ stages:
               useConfigurationFile: true
               configuration: '$(System.DefaultWorkingDirectory)/k8s.yaml'
 
-          # 🔥 FORCE UPDATE IMAGE (IMPORTANT FIX)
           - script: |
               kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n dev
               kubectl rollout restart deployment simple-app -n dev
@@ -96,7 +102,6 @@ stages:
               useConfigurationFile: true
               configuration: '$(System.DefaultWorkingDirectory)/k8s.yaml'
 
-          # 🔥 FORCE UPDATE IMAGE (IMPORTANT FIX)
           - script: |
               kubectl set image deployment/simple-app simple-app=mernacr123321.azurecr.io/simple-app:$(Build.BuildId) -n prod
               kubectl rollout restart deployment simple-app -n prod
