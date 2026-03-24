@@ -51,32 +51,36 @@ stages:
   displayName: Deploy to Dev
   dependsOn: Build
   jobs:
-  - job: DeployDev
-    steps:
+  - deployment: DeployDev        # 🔥 CHANGE
+    environment: dev-env         # 🔥 ADD THIS
+    strategy:
+      runOnce:
+        deploy:
+          steps:
 
-    - checkout: self
+          - checkout: self
 
-    - script: |
-        echo "Connecting to AKS..."
-        az login --identity
+          - script: |
+              echo "Connecting to AKS..."
+              az login --identity
 
-        az aks get-credentials \
-          --resource-group $(resourceGroup) \
-          --name $(aksCluster) \
-          --overwrite-existing
+              az aks get-credentials \
+                --resource-group $(resourceGroup) \
+                --name $(aksCluster) \
+                --overwrite-existing
 
-        echo "Deploying to Kubernetes..."
+              echo "Deploying to Kubernetes..."
 
-        kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
+              kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
-        kubectl set image deployment/$(imageName) \
-          $(imageName)=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
-          -n $(namespace)
+              kubectl set image deployment/$(imageName) \
+                $(imageName)=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
+                -n $(namespace)
 
-        kubectl rollout restart deployment $(imageName) -n $(namespace)
-        kubectl rollout status deployment $(imageName) -n $(namespace)
+              kubectl rollout restart deployment $(imageName) -n $(namespace)
+              kubectl rollout status deployment $(imageName) -n $(namespace)
 
-      displayName: Deploy to Private AKS (DEV)
+            displayName: Deploy to Private AKS (DEV)
 
 
 # ✅ PROD DEPLOY (WITH APPROVAL 🔥)
