@@ -31,7 +31,7 @@ spec:
           value: "azurepramod@pramod-postgres-db"
 
         - name: DB_PASSWORD
-          value: "Pa$$word1234567890"
+          value: "pammu123"
 
         - name: DB_NAME
           value: "testdb"
