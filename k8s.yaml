@@ -1,47 +1,81 @@
-# 🔥 DEPLOYMENT
+# 🔥 DEV DEPLOYMENT
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simple-app
+  name: simple-app-dev
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: simple-app
+      app: simple-app-dev
   template:
     metadata:
       labels:
-        app: simple-app
+        app: simple-app-dev
     spec:
       containers:
       - name: simple-app
         image: mernacr123321.azurecr.io/simple-app:latest
-        imagePullPolicy: Always
-
         ports:
         - containerPort: 4000
-
         env:
-        - name: PORT
-          value: "4000"
+        - name: ENV
+          value: "DEV"
 
 ---
-
-# 🔥 SERVICE
+# 🔥 DEV SERVICE
 apiVersion: v1
 kind: Service
 metadata:
-  name: simple-app
+  name: simple-app-dev
 spec:
   type: ClusterIP
   selector:
-    app: simple-app
+    app: simple-app-dev
   ports:
   - port: 80
     targetPort: 4000
 
 ---
+# 🔥 PROD DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-app-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-app-prod
+  template:
+    metadata:
+      labels:
+        app: simple-app-prod
+    spec:
+      containers:
+      - name: simple-app
+        image: mernacr123321.azurecr.io/simple-app:latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: ENV
+          value: "PROD"
 
+---
+# 🔥 PROD SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-app-prod
+spec:
+  type: ClusterIP
+  selector:
+    app: simple-app-prod
+  ports:
+  - port: 80
+    targetPort: 4000
+
+---
 # 🔥 DEV INGRESS
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -58,12 +92,11 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: simple-app
+            name: simple-app-dev   # ✅ CHANGE HERE
             port:
               number: 80
 
 ---
-
 # 🔥 PROD INGRESS
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -80,6 +113,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: simple-app
+            name: simple-app-prod   # ✅ CHANGE HERE
             port:
               number: 80
