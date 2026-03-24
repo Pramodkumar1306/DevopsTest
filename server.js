@@ -7,10 +7,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // 🔥 PostgreSQL Connection
 const pool = new Pool({
-    user: "pammu",
+    user: "postgres",
     host: "20.204.210.253",
-    database: "testdb",
-    password: "pammu123",
+    database: "postgres",
+    password: "postgres",
     port: 5432
 });
 
