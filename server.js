@@ -5,7 +5,7 @@ const app = express();
 
 // 🔥 DB CONNECTION
 const pool = new Pool({
-    user: "azurepramod@pramod-postgres-db",   // ✅ IMPORTANT
+    user: "azurepramod",   // ✅ IMPORTANT
     host: "pramod-postgres-db.postgres.database.azure.com", // ✅ use DNS
     database: "postgres",
     password: "Pa$$word1234567890",   // ✅ your actual password
