@@ -173,7 +173,7 @@ function editUser(id,name){
     <input type="text" name="name" placeholder="Enter name" required />
     <button class="btn add">Add</button>
 </form>
-
+<h1>Pramod Kumar</h1>
 <h3>Update User</h3>
 <form method="POST" action="/update">
     <input type="hidden" id="editId" name="id"/>
