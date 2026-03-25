@@ -47,6 +47,7 @@ metadata:
   name: simple-app-dev-ingress
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/backend-port: "4000"
     appgw.ingress.kubernetes.io/health-probe-path: /health
     appgw.ingress.kubernetes.io/backend-port: "4000"
 spec:
@@ -112,6 +113,7 @@ metadata:
   name: simple-app-prod-ingress
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/backend-port: "4000"
     appgw.ingress.kubernetes.io/health-probe-path: /health
     appgw.ingress.kubernetes.io/backend-port: "4000"
 spec:
