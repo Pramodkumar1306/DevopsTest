@@ -16,12 +16,9 @@ spec:
       containers:
       - name: simple-app
         image: mernacr123321.azurecr.io/simple-app:latest
-        imagePullPolicy: Always
         ports:
         - containerPort: 4000
         env:
-        - name: PORT
-          value: "4000"
         - name: ENV
           value: "DEV"
 
@@ -37,28 +34,6 @@ spec:
   ports:
   - port: 80
     targetPort: 4000
-
----
-# 🔥 DEV INGRESS (FINAL FIXED)
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: simple-app-dev-ingress
-  annotations:
-    appgw.ingress.kubernetes.io/backend-port: "4000"
-spec:
-  ingressClassName: azure-application-gateway
-  rules:
-  - host: dev.pramodkumar.online
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: simple-app-dev
-            port:
-              number: 80
 
 ---
 # 🔥 PROD DEPLOYMENT
@@ -79,12 +54,9 @@ spec:
       containers:
       - name: simple-app
         image: mernacr123321.azurecr.io/simple-app:latest
-        imagePullPolicy: Always
         ports:
         - containerPort: 4000
         env:
-        - name: PORT
-          value: "4000"
         - name: ENV
           value: "PROD"
 
@@ -102,15 +74,37 @@ spec:
     targetPort: 4000
 
 ---
-# 🔥 PROD INGRESS (FINAL FIXED)
+# 🔥 DEV INGRESS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: simple-app-dev-ingress
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/health-probe-path: /health
+spec:
+  rules:
+  - host: dev.pramodkumar.online
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: simple-app-dev
+            port:
+              number: 80
+
+---
+# 🔥 PROD INGRESS
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: simple-app-prod-ingress
   annotations:
-    appgw.ingress.kubernetes.io/backend-port: "4000"
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/health-probe-path: /health
 spec:
-  ingressClassName: azure-application-gateway
   rules:
   - host: pramodkumar.online
     http:
