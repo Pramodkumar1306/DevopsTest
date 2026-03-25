@@ -1,64 +1,119 @@
+# 🔥 DEV DEPLOYMENT
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simple-app
+  name: simple-app-dev
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: simple-app
+      app: simple-app-dev
   template:
     metadata:
       labels:
-        app: simple-app
+        app: simple-app-dev
     spec:
       containers:
       - name: simple-app
         image: mernacr123321.azurecr.io/simple-app:latest
         imagePullPolicy: Always
-
         ports:
         - containerPort: 4000
-
         env:
         - name: PORT
           value: "4000"
-
-        - name: DB_HOST
-          value: "pramod-postgres-db.postgres.database.azure.com"
-
-        - name: DB_USER
-          value: "azurepramod@pramod-postgres-db"
-
-        - name: DB_PASSWORD
-          value: "Pa$$word1234567890"
-
-        - name: DB_NAME
-          value: "testdb"
-
-        - name: DB_PORT
-          value: "5432"
+        - name: ENV
+          value: "DEV"
 
 ---
+# 🔥 DEV SERVICE
 apiVersion: v1
 kind: Service
 metadata:
-  name: simple-app
+  name: simple-app-dev
 spec:
   type: ClusterIP
   selector:
-    app: simple-app
+    app: simple-app-dev
   ports:
   - port: 80
     targetPort: 4000
 
 ---
+# 🔥 DEV INGRESS
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: simple-app-ingress
+  name: simple-app-dev-ingress
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/health-probe-path: /health
+    appgw.ingress.kubernetes.io/backend-port: "4000"
+spec:
+  rules:
+  - host: dev.pramodkumar.online
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: simple-app-dev
+            port:
+              number: 80
+
+---
+# 🔥 PROD DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-app-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-app-prod
+  template:
+    metadata:
+      labels:
+        app: simple-app-prod
+    spec:
+      containers:
+      - name: simple-app
+        image: mernacr123321.azurecr.io/simple-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+        env:
+        - name: PORT
+          value: "4000"
+        - name: ENV
+          value: "PROD"
+
+---
+# 🔥 PROD SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-app-prod
+spec:
+  type: ClusterIP
+  selector:
+    app: simple-app-prod
+  ports:
+  - port: 80
+    targetPort: 4000
+
+---
+# 🔥 PROD INGRESS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: simple-app-prod-ingress
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/health-probe-path: /health
+    appgw.ingress.kubernetes.io/backend-port: "4000"
 spec:
   rules:
   - host: pramodkumar.online
@@ -68,6 +123,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: simple-app
+            name: simple-app-prod
             port:
               number: 80
