@@ -168,7 +168,7 @@ function editUser(id,name){
 <div class="container">
 <div class="card">
 
-<h3>Add User</h3>
+<h3>Add Users</h3>
 <form method="POST" action="/add">
     <input type="text" name="name" placeholder="Enter name" required />
     <button class="btn add">Add</button>
