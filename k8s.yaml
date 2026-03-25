@@ -29,7 +29,6 @@ kind: Service
 metadata:
   name: simple-app-dev
 spec:
-  type: ClusterIP
   selector:
     app: simple-app-dev
   ports:
@@ -68,7 +67,6 @@ kind: Service
 metadata:
   name: simple-app-prod
 spec:
-  type: ClusterIP
   selector:
     app: simple-app-prod
   ports:
@@ -83,6 +81,7 @@ metadata:
   name: simple-app-dev-ingress
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/health-probe-path: /health
 spec:
   rules:
   - host: dev.pramodkumar.online
@@ -92,7 +91,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: simple-app-dev   # ✅ CHANGE HERE
+            name: simple-app-dev
             port:
               number: 80
 
@@ -104,6 +103,7 @@ metadata:
   name: simple-app-prod-ingress
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/health-probe-path: /health
 spec:
   rules:
   - host: pramodkumar.online
@@ -113,6 +113,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: simple-app-prod   # ✅ CHANGE HERE
+            name: simple-app-prod
             port:
               number: 80
