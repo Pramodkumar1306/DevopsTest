@@ -163,7 +163,7 @@ function editUser(id,name){
 
 <body>
 
-<div class="navbar">🚀 AKS PRO CRUD DASHBOARD</div>
+<div class="navbar">🚀 AKS PRO CRUD DASHBOARDSSSSSS........</div>
 
 <div class="container">
 <div class="card">
