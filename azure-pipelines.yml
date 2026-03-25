@@ -39,14 +39,13 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(Build.BuildId)
-          latest   # ✅ optional
 
     - script: |
         echo "Image pushed: $(acrName).azurecr.io/$(imageName):$(Build.BuildId)"
       displayName: Debug Image Tag
 
 
-# ✅ DEV DEPLOY (AUTO)
+# ✅ DEV DEPLOY
 - stage: Dev
   displayName: Deploy to Dev
   dependsOn: Build
@@ -73,17 +72,18 @@ stages:
 
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
-              # ✅ ONLY DEV DEPLOYMENT UPDATED
+              # 🔥 FIX HERE (DEV)
               kubectl set image deployment/simple-app-dev \
                 simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
                 -n $(namespace)
 
+              kubectl rollout restart deployment simple-app-dev -n $(namespace)
               kubectl rollout status deployment simple-app-dev -n $(namespace)
 
             displayName: Deploy DEV
 
 
-# ✅ PROD DEPLOY (MANUAL APPROVAL)
+# ✅ PROD DEPLOY (WITH APPROVAL)
 - stage: Prod
   displayName: Deploy to Prod
   dependsOn: Dev
@@ -110,11 +110,12 @@ stages:
 
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
-              # ✅ ONLY PROD DEPLOYMENT UPDATED
+              # 🔥 FIX HERE (PROD)
               kubectl set image deployment/simple-app-prod \
                 simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
                 -n $(namespace)
 
+              kubectl rollout restart deployment simple-app-prod -n $(namespace)
               kubectl rollout status deployment simple-app-prod -n $(namespace)
 
             displayName: Deploy PROD
