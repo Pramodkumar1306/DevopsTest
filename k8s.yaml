@@ -39,13 +39,14 @@ spec:
     targetPort: 4000
 
 ---
-# 🔥 DEV INGRESS (FIXED)
+# 🔥 DEV INGRESS (FINAL FIXED)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: simple-app-dev-ingress
   annotations:
     appgw.ingress.kubernetes.io/backend-port: "4000"
+    appgw.ingress.kubernetes.io/use-private-ip: "true"
 spec:
   ingressClassName: azure-application-gateway
   rules:
@@ -102,13 +103,14 @@ spec:
     targetPort: 4000
 
 ---
-# 🔥 PROD INGRESS (FIXED)
+# 🔥 PROD INGRESS (FINAL FIXED)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: simple-app-prod-ingress
   annotations:
     appgw.ingress.kubernetes.io/backend-port: "4000"
+    appgw.ingress.kubernetes.io/use-private-ip: "true"
 spec:
   ingressClassName: azure-application-gateway
   rules:
