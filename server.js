@@ -5,17 +5,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🔥 BASE PATH (IMPORTANT FOR AGIC)
-const basePath = process.env.BASE_PATH || "";
-
-// 🔥 MIDDLEWARE TO HANDLE /dev and /prod
-app.use((req, res, next) => {
-    if (basePath && req.url.startsWith(basePath)) {
-        req.url = req.url.replace(basePath, "") || "/";
-    }
-    next();
-});
-
 // 🔥 DB CONNECTION
 const pool = new Pool({
     user: "azurepramod",
@@ -56,7 +45,7 @@ app.get("/", async (req, res) => {
         <td>${user.id}</td>
         <td>${user.name}</td>
         <td>
-            <form method="POST" action="delete/${user.id}" style="display:inline;">
+            <form method="POST" action="/delete/${user.id}" style="display:inline;">
                 <button class="btn delete">Delete</button>
             </form>
             <button class="btn edit" onclick="editUser(${user.id}, '${user.name}')">Edit</button>
@@ -174,19 +163,19 @@ function editUser(id,name){
 
 <body>
 
-<div class="navbar">🚀 AKS PRO CRUD DASHBOARD (${process.env.ENV})</div>
+<div class="navbar">🚀 AKS PRO CRUD DASHBOARDSSSSSS........</div>
 
 <div class="container">
 <div class="card">
 
 <h3>Add Users</h3>
-<form method="POST" action="add">
+<form method="POST" action="/add">
     <input type="text" name="name" placeholder="Enter name" required />
     <button class="btn add">Add</button>
 </form>
 
 <h3>Update User</h3>
-<form method="POST" action="update">
+<form method="POST" action="/update">
     <input type="hidden" id="editId" name="id"/>
     <input type="text" id="editName" name="name" placeholder="Edit name" required />
     <button class="btn update">Update</button>
@@ -223,12 +212,14 @@ app.post("/add", async (req, res) => {
     res.redirect("/");
 });
 
+
 // 🔄 UPDATE
 app.post("/update", async (req, res) => {
     const { id, name } = req.body;
     await pool.query("UPDATE users SET name=$1 WHERE id=$2", [name, id]);
     res.redirect("/");
 });
+
 
 // ❌ DELETE
 app.post("/delete/:id", async (req, res) => {
@@ -237,10 +228,12 @@ app.post("/delete/:id", async (req, res) => {
     res.redirect("/");
 });
 
+
 // ❤️ HEALTH
 app.get("/health", (req, res) => {
     res.send("OK");
 });
+
 
 // 🚀 START
 app.listen(4000, "0.0.0.0", () => {

@@ -1,4 +1,4 @@
-# 🔹 DEV DEPLOYMENT
+#  DEV DEPLOYMENT
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,13 +24,12 @@ spec:
           value: "4000"
         - name: ENV
           value: "DEV"
-        - name: BASE_PATH
-          value: "/dev"
         - name: DATABASE_URL
           value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
 
 ---
-# 🔹 DEV SERVICE
+
+#  DEV SERVICE
 apiVersion: v1
 kind: Service
 metadata:
@@ -44,7 +43,8 @@ spec:
     targetPort: 4000
 
 ---
-# 🔹 PROD DEPLOYMENT
+
+#  PROD DEPLOYMENT
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -70,13 +70,12 @@ spec:
           value: "4000"
         - name: ENV
           value: "PROD"
-        - name: BASE_PATH
-          value: "/prod"
         - name: DATABASE_URL
           value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
 
 ---
-# 🔹 PROD SERVICE
+
+#  PROD SERVICE
 apiVersion: v1
 kind: Service
 metadata:
@@ -90,7 +89,8 @@ spec:
     targetPort: 4000
 
 ---
-# 🔹 INGRESS (FINAL)
+
+#  INGRESS (DEV + PROD)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -104,7 +104,7 @@ spec:
   ingressClassName: azure-application-gateway
   rules:
 
-  # 🔹 PROD DOMAIN
+  # PROD ROUTE
   - host: pramodkumar.online
     http:
       paths:
@@ -116,15 +116,7 @@ spec:
             port:
               number: 80
 
-      - path: /dev
-        pathType: Prefix
-        backend:
-          service:
-            name: simple-app-dev
-            port:
-              number: 80
-
-  # 🔹 DEV DOMAIN
+  #  DEV ROUTE
   - host: dev.pramodkumar.online
     http:
       paths:
@@ -133,13 +125,5 @@ spec:
         backend:
           service:
             name: simple-app-dev
-            port:
-              number: 80
-
-      - path: /prod
-        pathType: Prefix
-        backend:
-          service:
-            name: simple-app-prod
             port:
               number: 80
