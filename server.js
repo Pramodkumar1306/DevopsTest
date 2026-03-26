@@ -5,6 +5,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 🔥 NAVBAR (COMMON)
+function navbar(){
+return `
+<div style="background:#111;padding:15px;text-align:center;">
+<a href="/" style="color:white;margin:15px;">CRUD</a>
+<a href="/snake" style="color:white;margin:15px;">Snake 🐍</a>
+<a href="/mario" style="color:white;margin:15px;">Mario 🍄</a>
+</div>
+`;
+}
+
 // 🔥 DB CONNECTION
 const pool = new Pool({
     user: "azurepramod",
@@ -15,251 +26,170 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-// ✅ INIT DB
-async function initDB() {
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(100) NOT NULL
-        )
-    `);
-    console.log("✅ Table Ready");
-}
+pool.connect();
 
-pool.connect()
-    .then(() => {
-        console.log("✅ DB Connected");
-        initDB();
-    })
-    .catch(err => console.error("❌ DB Error:", err.message));
-
-
-// 🌟 HOME UI (ENHANCED)
+// ===================== CRUD =====================
 app.get("/", async (req, res) => {
     const result = await pool.query("SELECT * FROM users ORDER BY id");
 
-    let rows = result.rows.map(user => `
-    <tr class="fade">
-        <td>${user.id}</td>
-        <td>${user.name}</td>
+    let rows = result.rows.map(u => `
+    <tr>
+        <td>${u.id}</td>
+        <td>${u.name}</td>
         <td>
-            <form method="POST" action="/delete/${user.id}" style="display:inline;">
-                <button class="btn delete">🗑</button>
+            <form method="POST" action="/delete/${u.id}">
+                <button>❌</button>
             </form>
-            <button class="btn edit" onclick="editUser(${user.id}, '${user.name}')">✏️</button>
         </td>
-    </tr>
-    `).join("");
+    </tr>`).join("");
 
     res.send(`
-<!DOCTYPE html>
+    <html><body style="background:#222;color:white;text-align:center;">
+    ${navbar()}
+    <h2>CRUD Dashboard</h2>
+
+    <form method="POST" action="/add">
+        <input name="name" required/>
+        <button>Add</button>
+    </form>
+
+    <table border="1" style="margin:auto;">
+    <tr><th>ID</th><th>Name</th><th>Action</th></tr>
+    ${rows}
+    </table>
+    </body></html>
+    `);
+});
+
+app.post("/add", async (req, res) => {
+    await pool.query("INSERT INTO users(name) VALUES($1)", [req.body.name]);
+    res.redirect("/");
+});
+
+app.post("/delete/:id", async (req, res) => {
+    await pool.query("DELETE FROM users WHERE id=$1", [req.params.id]);
+    res.redirect("/");
+});
+
+// ===================== SNAKE GAME =====================
+app.get("/snake", (req, res) => {
+res.send(`
 <html>
-<head>
-<title>AKS Pro Dashboard</title>
+<body style="background:black;color:white;text-align:center;">
+${navbar()}
+<h2>🐍 Snake Game</h2>
+<h3>Score: <span id="score">0</span></h3>
 
-<style>
-body {
-    font-family: 'Segoe UI';
-    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    margin:0;
-    color:white;
-}
-
-.navbar {
-    background:#111;
-    padding:15px;
-    text-align:center;
-    font-size:24px;
-    font-weight:bold;
-    letter-spacing:1px;
-}
-
-.container {
-    width:90%;
-    margin:30px auto;
-}
-
-.card {
-    background:rgba(255,255,255,0.08);
-    padding:25px;
-    border-radius:12px;
-    backdrop-filter: blur(10px);
-    box-shadow:0px 10px 30px rgba(0,0,0,0.4);
-}
-
-h3 {
-    margin-top:20px;
-}
-
-input {
-    padding:10px;
-    border-radius:8px;
-    border:none;
-    margin:5px;
-    width:220px;
-}
-
-.btn {
-    padding:8px 12px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    transition:0.3s;
-}
-
-.btn:hover {
-    transform:scale(1.1);
-}
-
-.add { background:#27ae60; color:white; }
-.edit { background:#2980b9; color:white; }
-.delete { background:#c0392b; color:white; }
-.update { background:#f39c12; color:white; }
-
-table {
-    width:100%;
-    margin-top:20px;
-    border-collapse:collapse;
-    background:white;
-    color:black;
-    border-radius:10px;
-    overflow:hidden;
-}
-
-th {
-    background:#34495e;
-    color:white;
-    padding:12px;
-}
-
-td {
-    padding:10px;
-    border-bottom:1px solid #ddd;
-    text-align:center;
-}
-
-tr:hover {
-    background:#f2f2f2;
-}
-
-.fade {
-    animation:fadeIn 0.4s ease-in;
-}
-
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(10px);}
-    to {opacity:1; transform:translateY(0);}
-}
-
-.status {
-    margin-top:15px;
-    color:#2ecc71;
-    font-weight:bold;
-}
-
-.badge {
-    background:#2ecc71;
-    padding:5px 10px;
-    border-radius:20px;
-    font-size:12px;
-    margin-left:10px;
-}
-
-.footer {
-    text-align:center;
-    margin-top:20px;
-    font-size:14px;
-    opacity:0.7;
-}
-</style>
+<canvas id="game" width="400" height="400" style="background:#111;"></canvas>
 
 <script>
-function editUser(id,name){
-    document.getElementById("editId").value=id;
-    document.getElementById("editName").value=name;
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let snake=[{x:200,y:200}];
+let dx=20,dy=0;
+let food={x:100,y:100};
+let score=0;
+
+document.addEventListener("keydown",e=>{
+if(e.key==="ArrowUp"){dx=0;dy=-20;}
+if(e.key==="ArrowDown"){dx=0;dy=20;}
+if(e.key==="ArrowLeft"){dx=-20;dy=0;}
+if(e.key==="ArrowRight"){dx=20;dy=0;}
+});
+
+function game(){
+let head={x:snake[0].x+dx,y:snake[0].y+dy};
+
+if(head.x<0||head.y<0||head.x>=400||head.y>=400){
+alert("Game Over Score:"+score);
+location.reload();
 }
+
+snake.unshift(head);
+
+if(head.x===food.x&&head.y===food.y){
+score++;
+document.getElementById("score").innerText=score;
+food.x=Math.floor(Math.random()*20)*20;
+food.y=Math.floor(Math.random()*20)*20;
+}else{
+snake.pop();
+}
+
+ctx.clearRect(0,0,400,400);
+
+ctx.fillStyle="red";
+ctx.fillRect(food.x,food.y,20,20);
+
+ctx.fillStyle="lime";
+snake.forEach(s=>ctx.fillRect(s.x,s.y,20,20));
+}
+
+setInterval(game,100);
 </script>
-
-</head>
-
-<body>
-
-<div class="navbar">
-🚀 AKS PRO DASHBOARD 
-<span class="badge">LIVE</span>
-</div>
-
-<div class="container">
-<div class="card">
-
-<h3>➕ Add User</h3>
-<form method="POST" action="/add">
-    <input type="text" name="name" placeholder="Enter name" required />
-    <button class="btn add">Add</button>
-</form>
-
-<h3>✏️ Update User</h3>
-<form method="POST" action="/update">
-    <input type="hidden" id="editId" name="id"/>
-    <input type="text" id="editName" name="name" placeholder="Edit name" required />
-    <button class="btn update">Update</button>
-</form>
-
-<table>
-<tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Actions</th>
-</tr>
-
-${rows}
-
-</table>
-
-<div class="status">✅ Connected to Azure PostgreSQL</div>
-
-<div class="footer">
-⚡ Powered by AKS + Azure + DevOps Pipeline
-</div>
-
-</div>
-</div>
-
 </body>
 </html>
 `);
 });
 
+// ===================== MARIO GAME =====================
+app.get("/mario", (req, res) => {
+res.send(`
+<html>
+<body style="background:#5c94fc;margin:0;overflow:hidden;">
+${navbar()}
 
-// ➕ ADD
-app.post("/add", async (req, res) => {
-    const { name } = req.body;
-    if (!name) return res.send("❌ Name required");
+<h2 style="text-align:center;color:white;">🍄 Mario Game</h2>
 
-    await pool.query("INSERT INTO users(name) VALUES($1)", [name]);
-    res.redirect("/");
+<div id="gameArea" style="position:relative;width:100%;height:400px;background:#5c94fc;">
+    <div id="ground" style="position:absolute;bottom:0;width:100%;height:40px;background:#228B22;"></div>
+    <div id="mario" style="width:40px;height:40px;background:red;position:absolute;bottom:40px;left:50px;"></div>
+</div>
+
+<script>
+let mario=document.getElementById("mario");
+let x=50;
+let y=40;
+let velocity=0;
+let gravity=1;
+let jumping=false;
+
+document.addEventListener("keydown",e=>{
+if(e.key==="ArrowRight"){x+=10;}
+if(e.key==="ArrowLeft"){x-=10;}
+
+if(e.key===" " && !jumping){
+jumping=true;
+velocity=15;
+}
 });
 
-// 🔄 UPDATE
-app.post("/update", async (req, res) => {
-    const { id, name } = req.body;
-    await pool.query("UPDATE users SET name=$1 WHERE id=$2", [name, id]);
-    res.redirect("/");
+function gameLoop(){
+velocity-=gravity;
+y+=velocity;
+
+if(y<=40){
+y=40;
+jumping=false;
+}
+
+mario.style.left=x+"px";
+mario.style.bottom=y+"px";
+
+requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
+`);
 });
 
-// ❌ DELETE
-app.post("/delete/:id", async (req, res) => {
-    const id = req.params.id;
-    await pool.query("DELETE FROM users WHERE id=$1", [id]);
-    res.redirect("/");
-});
+// =====================
+app.get("/health",(req,res)=>res.send("OK"));
 
-// ❤️ HEALTH
-app.get("/health", (req, res) => {
-    res.send("OK");
-});
-
-// 🚀 START
-app.listen(4000, "0.0.0.0", () => {
-    console.log("🚀 Server running on port 4000");
+app.listen(4000,"0.0.0.0",()=>{
+console.log("🚀 Server running on port 4000");
 });

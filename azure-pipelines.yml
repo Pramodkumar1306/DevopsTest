@@ -2,8 +2,9 @@ trigger:
 - main
 
 pool:
-  name: 'Default'
+  name: 'Default'  #self hosted agent pool 
 
+# vaiable  this commonly used in multiple stages, we define them here to avoid repetition and make it easier to update in the future
 variables:
   imageName: 'simple-app'
   acrName: 'mernacr123321'
@@ -13,23 +14,23 @@ variables:
 
 stages:
 
-# ✅ BUILD
+# BUILD  Installs dependencies, builds the Docker image, and pushes it to Azure Container Registry (ACR).
 - stage: Build
   displayName: Build and Push Image
   jobs:
   - job: BuildJob
     steps:
-
+# Gets code from GitHub
     - checkout: self
       clean: true
-
+# Installs Node.js (v18), installs dependencies, builds the Docker image, and pushes it to Azure Container Registry (ACR).
     - task: NodeTool@0
       inputs:
         versionSpec: '18.x'
 
     - script: npm install
       displayName: Install Dependencies
-
+# Builds the Docker image and pushes it to ACR using the Docker@2 task.
     - task: Docker@2
       displayName: Build and Push Docker Image
       inputs:
@@ -39,13 +40,13 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(Build.BuildId)
-
+# Debug step to print the image tag that was pushed to ACR, which can be helpful for troubleshooting and verification.
     - script: |
         echo "Image pushed: $(acrName).azurecr.io/$(imageName):$(Build.BuildId)"
       displayName: Debug Image Tag
 
 
-# ✅ DEV DEPLOY
+#  DEV DEPLOY
 - stage: Dev
   displayName: Deploy to Dev
   dependsOn: Build
@@ -56,9 +57,13 @@ stages:
       runOnce:
         deploy:
           steps:
-
+# Gets code from GitHub to ensure we have the latest k8s.yaml file, which contains the Kubernetes deployment and service definitions for the DEV environment.
           - checkout: self
-
+# Connects to the AKS cluster using Azure CLI, applies the Kubernetes manifests, 
+# updates the image in the deployment to the newly built image, and restarts the 
+# deployment to trigger a rollout of the new version. This step ensures that the 
+# DEV environment is updated with the latest changes and is running the new version 
+# of the application.
           - script: |
               echo "Connecting to AKS..."
               az login --identity
@@ -72,18 +77,26 @@ stages:
 
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
-              # 🔥 FIX HERE (DEV)
+              
               kubectl set image deployment/simple-app-dev \
                 simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
                 -n $(namespace)
 
               kubectl rollout restart deployment simple-app-dev -n $(namespace)
               kubectl rollout status deployment simple-app-dev -n $(namespace)
-
+# Debug step to confirm that the deployment was successful and the new image is 
+#running in the DEV environment, which can help with troubleshooting and 
+#verification.
             displayName: Deploy DEV
 
 
-# ✅ PROD DEPLOY (WITH APPROVAL)
+# PROD DEPLOY (WITH APPROVAL)
+# This stage is similar to the DEV deployment but is intended for the PROD 
+#environment. It includes an approval step before deployment, ensuring that 
+#changes are reviewed and approved before being deployed to production. The 
+#deployment process is the same as DEV, where it connects to AKS, applies the 
+#Kubernetes manifests, updates the image, and restarts the deployment to trigger a 
+#rollout of the new version in the PROD environment.
 - stage: Prod
   displayName: Deploy to Prod
   dependsOn: Dev
@@ -110,7 +123,6 @@ stages:
 
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
-              # 🔥 FIX HERE (PROD)
               kubectl set image deployment/simple-app-prod \
                 simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
                 -n $(namespace)
