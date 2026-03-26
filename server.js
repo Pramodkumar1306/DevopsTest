@@ -12,9 +12,7 @@ const pool = new Pool({
     database: "postgres",
     password: "Pa$$word1234567890",
     port: 5432,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    ssl: { rejectUnauthorized: false }
 });
 
 // ✅ INIT DB
@@ -36,7 +34,7 @@ pool.connect()
     .catch(err => console.error("❌ DB Error:", err.message));
 
 
-// 🌟 HOME UI (ADVANCED)
+// 🌟 HOME UI (ENHANCED)
 app.get("/", async (req, res) => {
     const result = await pool.query("SELECT * FROM users ORDER BY id");
 
@@ -46,9 +44,9 @@ app.get("/", async (req, res) => {
         <td>${user.name}</td>
         <td>
             <form method="POST" action="/delete/${user.id}" style="display:inline;">
-                <button class="btn delete">Delete</button>
+                <button class="btn delete">🗑</button>
             </form>
-            <button class="btn edit" onclick="editUser(${user.id}, '${user.name}')">Edit</button>
+            <button class="btn edit" onclick="editUser(${user.id}, '${user.name}')">✏️</button>
         </td>
     </tr>
     `).join("");
@@ -57,12 +55,12 @@ app.get("/", async (req, res) => {
 <!DOCTYPE html>
 <html>
 <head>
-<title>AKS Pro CRUD</title>
+<title>AKS Pro Dashboard</title>
 
 <style>
 body {
     font-family: 'Segoe UI';
-    background: linear-gradient(135deg,#141e30,#243b55);
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
     margin:0;
     color:white;
 }
@@ -71,8 +69,9 @@ body {
     background:#111;
     padding:15px;
     text-align:center;
-    font-size:22px;
+    font-size:24px;
     font-weight:bold;
+    letter-spacing:1px;
 }
 
 .container {
@@ -81,24 +80,29 @@ body {
 }
 
 .card {
-    background:rgba(255,255,255,0.1);
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0px 5px 20px rgba(0,0,0,0.3);
+    background:rgba(255,255,255,0.08);
+    padding:25px;
+    border-radius:12px;
+    backdrop-filter: blur(10px);
+    box-shadow:0px 10px 30px rgba(0,0,0,0.4);
+}
+
+h3 {
+    margin-top:20px;
 }
 
 input {
     padding:10px;
-    border-radius:6px;
+    border-radius:8px;
     border:none;
     margin:5px;
-    width:200px;
+    width:220px;
 }
 
 .btn {
     padding:8px 12px;
     border:none;
-    border-radius:6px;
+    border-radius:8px;
     cursor:pointer;
     transition:0.3s;
 }
@@ -107,9 +111,9 @@ input {
     transform:scale(1.1);
 }
 
-.add { background:#2ecc71; color:white; }
-.edit { background:#3498db; color:white; }
-.delete { background:#e74c3c; color:white; }
+.add { background:#27ae60; color:white; }
+.edit { background:#2980b9; color:white; }
+.delete { background:#c0392b; color:white; }
 .update { background:#f39c12; color:white; }
 
 table {
@@ -123,14 +127,15 @@ table {
 }
 
 th {
-    background:#2c3e50;
+    background:#34495e;
     color:white;
-    padding:10px;
+    padding:12px;
 }
 
 td {
     padding:10px;
     border-bottom:1px solid #ddd;
+    text-align:center;
 }
 
 tr:hover {
@@ -138,7 +143,7 @@ tr:hover {
 }
 
 .fade {
-    animation:fadeIn 0.5s ease-in;
+    animation:fadeIn 0.4s ease-in;
 }
 
 @keyframes fadeIn {
@@ -147,8 +152,24 @@ tr:hover {
 }
 
 .status {
-    margin-top:10px;
-    color:lightgreen;
+    margin-top:15px;
+    color:#2ecc71;
+    font-weight:bold;
+}
+
+.badge {
+    background:#2ecc71;
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:12px;
+    margin-left:10px;
+}
+
+.footer {
+    text-align:center;
+    margin-top:20px;
+    font-size:14px;
+    opacity:0.7;
 }
 </style>
 
@@ -163,18 +184,21 @@ function editUser(id,name){
 
 <body>
 
-<div class="navbar">🚀 AKS PRO CRUD DASHBOARDSSSSSS........</div>
+<div class="navbar">
+🚀 AKS PRO DASHBOARD 
+<span class="badge">LIVE</span>
+</div>
 
 <div class="container">
 <div class="card">
 
-<h3>Add Users</h3>
+<h3>➕ Add User</h3>
 <form method="POST" action="/add">
     <input type="text" name="name" placeholder="Enter name" required />
     <button class="btn add">Add</button>
 </form>
 
-<h3>Update User</h3>
+<h3>✏️ Update User</h3>
 <form method="POST" action="/update">
     <input type="hidden" id="editId" name="id"/>
     <input type="text" id="editName" name="name" placeholder="Edit name" required />
@@ -194,6 +218,10 @@ ${rows}
 
 <div class="status">✅ Connected to Azure PostgreSQL</div>
 
+<div class="footer">
+⚡ Powered by AKS + Azure + DevOps Pipeline
+</div>
+
 </div>
 </div>
 
@@ -212,14 +240,12 @@ app.post("/add", async (req, res) => {
     res.redirect("/");
 });
 
-
 // 🔄 UPDATE
 app.post("/update", async (req, res) => {
     const { id, name } = req.body;
     await pool.query("UPDATE users SET name=$1 WHERE id=$2", [name, id]);
     res.redirect("/");
 });
-
 
 // ❌ DELETE
 app.post("/delete/:id", async (req, res) => {
@@ -228,12 +254,10 @@ app.post("/delete/:id", async (req, res) => {
     res.redirect("/");
 });
 
-
 // ❤️ HEALTH
 app.get("/health", (req, res) => {
     res.send("OK");
 });
-
 
 // 🚀 START
 app.listen(4000, "0.0.0.0", () => {
