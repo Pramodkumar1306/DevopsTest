@@ -1,14 +1,52 @@
+const express = require("express");
+const { Pool } = require("pg");
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 🔥 DB CONNECTION
+const pool = new Pool({
+    user: "azurepramod",
+    host: "pramod-postgres-db.postgres.database.azure.com",
+    database: "postgres",
+    password: "Pa$$word1234567890",
+    port: 5432,
+    ssl: { rejectUnauthorized: false }
+});
+
+// ✅ INIT DB
+async function initDB() {
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL
+        )
+    `);
+    console.log("✅ Table Ready");
+}
+
+pool.connect()
+    .then(() => {
+        console.log("✅ DB Connected");
+        initDB();
+    })
+    .catch(err => console.error("❌ DB Error:", err.message));
+
+
+// 🌟 HOME UI (ENHANCED)
 app.get("/", async (req, res) => {
     const result = await pool.query("SELECT * FROM users ORDER BY id");
 
     let rows = result.rows.map(user => `
-    <tr>
+    <tr class="fade">
         <td>${user.id}</td>
         <td>${user.name}</td>
         <td>
-            <form method="POST" action="/delete/${user.id}">
-                <button>❌</button>
+            <form method="POST" action="/delete/${user.id}" style="display:inline;">
+                <button class="btn delete">🗑</button>
             </form>
+            <button class="btn edit" onclick="editUser(${user.id}, '${user.name}')">✏️</button>
         </td>
     </tr>
     `).join("");
@@ -17,183 +55,211 @@ app.get("/", async (req, res) => {
 <!DOCTYPE html>
 <html>
 <head>
-<title>Super Dashboard</title>
+<title>AKS Pro Dashboard</title>
 
 <style>
 body {
+    font-family: 'Segoe UI';
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
     margin:0;
-    font-family: Arial;
-    background:#111;
     color:white;
 }
 
 .navbar {
-    background:#000;
+    background:#111;
     padding:15px;
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    letter-spacing:1px;
+}
+
+.container {
+    width:90%;
+    margin:30px auto;
+}
+
+.card {
+    background:rgba(255,255,255,0.08);
+    padding:25px;
+    border-radius:12px;
+    backdrop-filter: blur(10px);
+    box-shadow:0px 10px 30px rgba(0,0,0,0.4);
+}
+
+h3 {
+    margin-top:20px;
+}
+
+input {
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    margin:5px;
+    width:220px;
+}
+
+.btn {
+    padding:8px 12px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn:hover {
+    transform:scale(1.1);
+}
+
+.add { background:#27ae60; color:white; }
+.edit { background:#2980b9; color:white; }
+.delete { background:#c0392b; color:white; }
+.update { background:#f39c12; color:white; }
+
+table {
+    width:100%;
+    margin-top:20px;
+    border-collapse:collapse;
+    background:white;
+    color:black;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+th {
+    background:#34495e;
+    color:white;
+    padding:12px;
+}
+
+td {
+    padding:10px;
+    border-bottom:1px solid #ddd;
     text-align:center;
 }
 
-.navbar button {
-    margin:10px;
-    padding:10px 20px;
-    cursor:pointer;
+tr:hover {
+    background:#f2f2f2;
 }
 
-.section { display:none; padding:20px; }
-.active { display:block; }
+.fade {
+    animation:fadeIn 0.4s ease-in;
+}
 
-canvas {
-    background:#222;
-    display:block;
-    margin:auto;
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(10px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+.status {
+    margin-top:15px;
+    color:#2ecc71;
+    font-weight:bold;
+}
+
+.badge {
+    background:#2ecc71;
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:12px;
+    margin-left:10px;
+}
+
+.footer {
+    text-align:center;
+    margin-top:20px;
+    font-size:14px;
+    opacity:0.7;
 }
 </style>
+
+<script>
+function editUser(id,name){
+    document.getElementById("editId").value=id;
+    document.getElementById("editName").value=name;
+}
+</script>
 
 </head>
 
 <body>
 
 <div class="navbar">
-<button onclick="show('crud')">CRUD</button>
-<button onclick="show('snake')">Snake 🐍</button>
-<button onclick="show('game')">Game 🎮</button>
+🚀 AKS PRO DASHBOARD 
+<span class="badge">LIVE</span>
 </div>
 
-<!-- ================= CRUD ================= -->
-<div id="crud" class="section active">
-<h2>CRUD</h2>
+<div class="container">
+<div class="card">
 
+<h3>➕ Add User</h3>
 <form method="POST" action="/add">
-<input name="name" required>
-<button>Add</button>
+    <input type="text" name="name" placeholder="Enter name" required />
+    <button class="btn add">Add</button>
 </form>
 
-<table border="1" style="margin:auto;">
-<tr><th>ID</th><th>Name</th><th>Action</th></tr>
+<h3>✏️ Update User</h3>
+<form method="POST" action="/update">
+    <input type="hidden" id="editId" name="id"/>
+    <input type="text" id="editName" name="name" placeholder="Edit name" required />
+    <button class="btn update">Update</button>
+</form>
+
+<table>
+<tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Actions</th>
+</tr>
+
 ${rows}
+
 </table>
+
+<div class="status">✅ Connected to Azure PostgreSQL</div>
+
+<div class="footer">
+⚡ Powered by AKS + Azure + DevOps Pipeline
 </div>
 
-<!-- ================= SNAKE ================= -->
-<div id="snake" class="section">
-<h2>Snake Game</h2>
-<h3>Score: <span id="score">0</span></h3>
-<canvas id="snakeGame" width="400" height="400"></canvas>
 </div>
-
-<!-- ================= SHOOTING GAME ================= -->
-<div id="game" class="section">
-<h2>Shooting Game</h2>
-<p>⬅️ ➡️ Move | SPACE Shoot</p>
-<canvas id="shootGame" width="800" height="400"></canvas>
 </div>
-
-<script>
-// 🔥 NAV SWITCH
-function show(id){
-    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-}
-
-// ================= SNAKE =================
-const sCanvas=document.getElementById("snakeGame");
-const sCtx=sCanvas.getContext("2d");
-
-let snake=[{x:200,y:200}],dx=20,dy=0;
-let food={x:100,y:100},score=0;
-
-document.addEventListener("keydown",e=>{
-if(e.key==="ArrowUp"){dx=0;dy=-20;}
-if(e.key==="ArrowDown"){dx=0;dy=20;}
-if(e.key==="ArrowLeft"){dx=-20;dy=0;}
-if(e.key==="ArrowRight"){dx=20;dy=0;}
-});
-
-function snakeGame(){
-let head={x:snake[0].x+dx,y:snake[0].y+dy};
-
-if(head.x<0||head.y<0||head.x>=400||head.y>=400){
-snake=[{x:200,y:200}];score=0;
-}
-
-snake.unshift(head);
-
-if(head.x===food.x&&head.y===food.y){
-score++;
-document.getElementById("score").innerText=score;
-food.x=Math.floor(Math.random()*20)*20;
-food.y=Math.floor(Math.random()*20)*20;
-}else{
-snake.pop();
-}
-
-sCtx.clearRect(0,0,400,400);
-
-sCtx.fillStyle="red";
-sCtx.fillRect(food.x,food.y,20,20);
-
-sCtx.fillStyle="lime";
-snake.forEach(s=>sCtx.fillRect(s.x,s.y,20,20));
-}
-setInterval(snakeGame,100);
-
-// ================= SHOOT GAME =================
-const canvas=document.getElementById("shootGame");
-const ctx=canvas.getContext("2d");
-
-let player={x:50,y:300};
-let bullets=[],enemies=[],score2=0;
-
-document.addEventListener("keydown",e=>{
-if(e.key==="ArrowRight") player.x+=20;
-if(e.key==="ArrowLeft") player.x-=20;
-
-if(e.key===" ") bullets.push({x:player.x+40,y:player.y+15});
-});
-
-setInterval(()=>{ enemies.push({x:800,y:300}); },2000);
-
-function game(){
-ctx.clearRect(0,0,800,400);
-
-ctx.fillStyle="lime";
-ctx.fillRect(player.x,player.y,40,40);
-
-bullets.forEach((b,i)=>{
-b.x+=10;
-ctx.fillStyle="yellow";
-ctx.fillRect(b.x,b.y,10,5);
-});
-
-enemies.forEach((e,ei)=>{
-e.x-=3;
-ctx.fillStyle="red";
-ctx.fillRect(e.x,e.y,40,40);
-
-bullets.forEach((b,bi)=>{
-if(b.x<e.x+40 && b.x+10>e.x){
-enemies.splice(ei,1);
-bullets.splice(bi,1);
-score2++;
-}
-});
-
-if(e.x<0){
-alert("Game Over Score:"+score2);
-location.reload();
-}
-});
-
-ctx.fillStyle="white";
-ctx.fillText("Score:"+score2,10,20);
-
-requestAnimationFrame(game);
-}
-game();
-
-</script>
 
 </body>
 </html>
 `);
+});
+
+
+// ➕ ADD
+app.post("/add", async (req, res) => {
+    const { name } = req.body;
+    if (!name) return res.send("❌ Name required");
+
+    await pool.query("INSERT INTO users(name) VALUES($1)", [name]);
+    res.redirect("/");
+});
+
+// 🔄 UPDATE
+app.post("/update", async (req, res) => {
+    const { id, name } = req.body;
+    await pool.query("UPDATE users SET name=$1 WHERE id=$2", [name, id]);
+    res.redirect("/");
+});
+
+// ❌ DELETE
+app.post("/delete/:id", async (req, res) => {
+    const id = req.params.id;
+    await pool.query("DELETE FROM users WHERE id=$1", [id]);
+    res.redirect("/");
+});
+
+// ❤️ HEALTH
+app.get("/health", (req, res) => {
+    res.send("OK");
+});
+
+// 🚀 START
+app.listen(4000, "0.0.0.0", () => {
+    console.log("🚀 Server running on port 4000");
 });
