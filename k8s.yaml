@@ -1,4 +1,4 @@
-# 🔥 DEV DEPLOYMENT
+#  DEV DEPLOYMENT
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,10 +24,12 @@ spec:
           value: "4000"
         - name: ENV
           value: "DEV"
+        - name: DATABASE_URL
+          value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
 
 ---
 
-# 🔥 DEV SERVICE
+#  DEV SERVICE
 apiVersion: v1
 kind: Service
 metadata:
@@ -42,7 +44,7 @@ spec:
 
 ---
 
-# 🔥 PROD DEPLOYMENT
+#  PROD DEPLOYMENT
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -68,10 +70,12 @@ spec:
           value: "4000"
         - name: ENV
           value: "PROD"
+        - name: DATABASE_URL
+          value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
 
 ---
 
-# 🔥 PROD SERVICE
+#  PROD SERVICE
 apiVersion: v1
 kind: Service
 metadata:
@@ -86,7 +90,7 @@ spec:
 
 ---
 
-# 🔥 INGRESS (DEV + PROD)
+#  INGRESS (DEV + PROD)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -100,7 +104,7 @@ spec:
   ingressClassName: azure-application-gateway
   rules:
 
-  # 🔥 PROD ROUTE
+  # PROD ROUTE
   - host: pramodkumar.online
     http:
       paths:
@@ -112,7 +116,7 @@ spec:
             port:
               number: 80
 
-  # 🔥 DEV ROUTE
+  #  DEV ROUTE
   - host: dev.pramodkumar.online
     http:
       paths:
