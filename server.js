@@ -30,11 +30,9 @@ pool.connect()
     .then(() => {
         console.log("✅ DB Connected");
         initDB();
-    })
-    .catch(err => console.error("❌ DB Error:", err.message));
+    });
 
-
-// 🌟 HOME UI (ENHANCED)
+// 🌟 HOME UI
 app.get("/", async (req, res) => {
     const result = await pool.query("SELECT * FROM users ORDER BY id");
 
@@ -65,15 +63,34 @@ body {
     color:white;
 }
 
+/* NAVBAR */
 .navbar {
     background:#111;
     padding:15px;
     text-align:center;
     font-size:24px;
     font-weight:bold;
-    letter-spacing:1px;
 }
 
+.navbar button {
+    margin:8px;
+    padding:10px 18px;
+    border:none;
+    border-radius:6px;
+    background:#3498db;
+    color:white;
+    cursor:pointer;
+}
+
+.navbar button:hover {
+    background:#2980b9;
+}
+
+/* PAGE SWITCH */
+.page { display:none; }
+.page.active { display:block; }
+
+/* UI */
 .container {
     width:90%;
     margin:30px auto;
@@ -85,10 +102,6 @@ body {
     border-radius:12px;
     backdrop-filter: blur(10px);
     box-shadow:0px 10px 30px rgba(0,0,0,0.4);
-}
-
-h3 {
-    margin-top:20px;
 }
 
 input {
@@ -111,10 +124,10 @@ input {
     transform:scale(1.1);
 }
 
-.add { background:#27ae60; color:white; }
-.edit { background:#2980b9; color:white; }
-.delete { background:#c0392b; color:white; }
-.update { background:#f39c12; color:white; }
+.add { background:#27ae60; }
+.edit { background:#2980b9; }
+.delete { background:#c0392b; }
+.update { background:#f39c12; }
 
 table {
     width:100%;
@@ -134,12 +147,7 @@ th {
 
 td {
     padding:10px;
-    border-bottom:1px solid #ddd;
     text-align:center;
-}
-
-tr:hover {
-    background:#f2f2f2;
 }
 
 .fade {
@@ -147,29 +155,12 @@ tr:hover {
 }
 
 @keyframes fadeIn {
-    from {opacity:0; transform:translateY(10px);}
-    to {opacity:1; transform:translateY(0);}
+    from {opacity:0;}
+    to {opacity:1;}
 }
 
-.status {
-    margin-top:15px;
-    color:#2ecc71;
-    font-weight:bold;
-}
-
-.badge {
-    background:#2ecc71;
-    padding:5px 10px;
-    border-radius:20px;
-    font-size:12px;
-    margin-left:10px;
-}
-
-.footer {
-    text-align:center;
-    margin-top:20px;
-    font-size:14px;
-    opacity:0.7;
+.info {
+    line-height:1.8;
 }
 </style>
 
@@ -178,6 +169,11 @@ function editUser(id,name){
     document.getElementById("editId").value=id;
     document.getElementById("editName").value=name;
 }
+
+function showPage(page){
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.getElementById(page).classList.add("active");
+}
 </script>
 
 </head>
@@ -185,9 +181,14 @@ function editUser(id,name){
 <body>
 
 <div class="navbar">
-🚀 AKS PRO DASHBOARD 
-<span class="badge">LIVE</span>
+🚀 AKS PRO DASHBOARD  
+<br>
+<button onclick="showPage('crud')">CRUD</button>
+<button onclick="showPage('info')">About CRUD</button>
 </div>
+
+<!-- ================= CRUD ================= -->
+<div id="crud" class="page active">
 
 <div class="container">
 <div class="card">
@@ -201,7 +202,7 @@ function editUser(id,name){
 <h3>✏️ Update User</h3>
 <form method="POST" action="/update">
     <input type="hidden" id="editId" name="id"/>
-    <input type="text" id="editName" name="name" placeholder="Edit name" required />
+    <input type="text" id="editName" name="name" required />
     <button class="btn update">Update</button>
 </form>
 
@@ -216,13 +217,63 @@ ${rows}
 
 </table>
 
-<div class="status">✅ Connected to Azure PostgreSQL</div>
-
-<div class="footer">
-⚡ Powered by AKS + Azure + DevOps Pipeline
+</div>
 </div>
 
 </div>
+
+<!-- ================= INFO PAGE ================= -->
+<div id="info" class="page">
+
+<div class="container">
+<div class="card info">
+
+<h2>📘 What is CRUD?</h2>
+
+<p>
+CRUD stands for Create, Read, Update, Delete. It is the basic functionality of any database-driven application.
+</p>
+
+<h3>➕ Create</h3>
+<p>Add new records into the database.</p>
+
+<h3>📖 Read</h3>
+<p>Fetch and display records.</p>
+
+<h3>✏️ Update</h3>
+<p>Modify existing records.</p>
+
+<h3>❌ Delete</h3>
+<p>Remove records permanently.</p>
+
+<h2>⚙️ How This Works</h2>
+
+<p>
+1. User interacts with UI  
+<br>2. Request goes to Express server  
+<br>3. Server executes SQL query  
+<br>4. Data stored in PostgreSQL  
+<br>5. UI updates  
+</p>
+
+<h2>🌐 Architecture</h2>
+
+<p>
+Browser → Node.js → PostgreSQL → Response → UI
+</p>
+
+<h2>🚀 Use Cases</h2>
+
+<p>
+✔ Banking systems  
+<br>✔ Admin dashboards  
+<br>✔ E-commerce  
+<br>✔ APIs  
+</p>
+
+</div>
+</div>
+
 </div>
 
 </body>
@@ -230,36 +281,28 @@ ${rows}
 `);
 });
 
-
 // ➕ ADD
 app.post("/add", async (req, res) => {
-    const { name } = req.body;
-    if (!name) return res.send("❌ Name required");
-
-    await pool.query("INSERT INTO users(name) VALUES($1)", [name]);
+    await pool.query("INSERT INTO users(name) VALUES($1)", [req.body.name]);
     res.redirect("/");
 });
 
 // 🔄 UPDATE
 app.post("/update", async (req, res) => {
-    const { id, name } = req.body;
-    await pool.query("UPDATE users SET name=$1 WHERE id=$2", [name, id]);
+    await pool.query("UPDATE users SET name=$1 WHERE id=$2", [req.body.name, req.body.id]);
     res.redirect("/");
 });
 
 // ❌ DELETE
 app.post("/delete/:id", async (req, res) => {
-    const id = req.params.id;
-    await pool.query("DELETE FROM users WHERE id=$1", [id]);
+    await pool.query("DELETE FROM users WHERE id=$1", [req.params.id]);
     res.redirect("/");
 });
 
-// ❤️ HEALTH
-app.get("/health", (req, res) => {
-    res.send("OK");
-});
+// HEALTH
+app.get("/health", (req, res) => res.send("OK"));
 
-// 🚀 START
+// START
 app.listen(4000, "0.0.0.0", () => {
     console.log("🚀 Server running on port 4000");
 });
