@@ -55,25 +55,24 @@ stages:
           steps:
           - checkout: self
 
-          - task: AzureCLI@2
-            inputs:
-              azureSubscription: 'NewAcrConnection'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az aks get-credentials \
-                  --resource-group $(resourceGroup) \
-                  --name $(aksCluster) \
-                  --overwrite-existing
+          - script: |
+              az login --identity
 
-                kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
+              az aks get-credentials \
+                --resource-group $(resourceGroup) \
+                --name $(aksCluster) \
+                --overwrite-existing
 
-                kubectl set image deployment/simple-app-dev \
-                  simple-app=$(acrName).azurecr.io/$(imageName):latest \
-                  -n $(namespace)
+              kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
-                kubectl rollout restart deployment simple-app-dev -n $(namespace)
-                kubectl rollout status deployment simple-app-dev -n $(namespace)
+              kubectl set image deployment/simple-app-dev \
+                simple-app=$(acrName).azurecr.io/$(imageName):latest \
+                -n $(namespace)
+
+              kubectl rollout restart deployment simple-app-dev -n $(namespace)
+              kubectl rollout status deployment simple-app-dev -n $(namespace)
+
+            displayName: Deploy DEV
 
 
 - stage: Prod
@@ -88,22 +87,21 @@ stages:
           steps:
           - checkout: self
 
-          - task: AzureCLI@2
-            inputs:
-              azureSubscription: 'NewAcrConnection'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az aks get-credentials \
-                  --resource-group $(resourceGroup) \
-                  --name $(aksCluster) \
-                  --overwrite-existing
+          - script: |
+              az login --identity
 
-                kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
+              az aks get-credentials \
+                --resource-group $(resourceGroup) \
+                --name $(aksCluster) \
+                --overwrite-existing
 
-                kubectl set image deployment/simple-app-prod \
-                  simple-app=$(acrName).azurecr.io/$(imageName):latest \
-                  -n $(namespace)
+              kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
-                kubectl rollout restart deployment simple-app-prod -n $(namespace)
-                kubectl rollout status deployment simple-app-prod -n $(namespace)
+              kubectl set image deployment/simple-app-prod \
+                simple-app=$(acrName).azurecr.io/$(imageName):latest \
+                -n $(namespace)
+
+              kubectl rollout restart deployment simple-app-prod -n $(namespace)
+              kubectl rollout status deployment simple-app-prod -n $(namespace)
+
+            displayName: Deploy PROD
