@@ -31,16 +31,22 @@ stages:
     - script: npm install
       displayName: Install Dependencies
 # Builds the Docker image and pushes it to ACR using the Docker@2 task.
-    - task: Docker@2
-      displayName: Build and Push Docker Image
-      inputs:
-        containerRegistry: 'ACR-Service-Connection'
-        repository: '$(imageName)'
-        command: 'buildAndPush'
-        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        tags: |
-          $(Build.BuildId)
-# Debug step to print the image tag that was pushed to ACR, which can be helpful for troubleshooting and verification.
+    # 🔥 FIX (IMPORTANT)
+    - script: |
+        echo "Login to Azure"
+        az login
+
+        echo "Login to ACR"
+        az acr login --name $(acrName)
+
+        echo "Build Docker Image"
+        docker build -t $(acrName).azurecr.io/$(imageName):$(Build.BuildId) .
+
+        echo "Push Docker Image"
+        docker push $(acrName).azurecr.io/$(imageName):$(Build.BuildId)
+
+      displayName: Build and Push Image (Manual)
+
     - script: |
         echo "Image pushed: $(acrName).azurecr.io/$(imageName):$(Build.BuildId)"
       displayName: Debug Image Tag
