@@ -42,7 +42,7 @@ stages:
           $(Build.BuildId)
 # Debug step to print the image tag that was pushed to ACR, which can be helpful for troubleshooting and verification.
     - script: |
-        echo "Image pushed: $(acrName).azurecr.io/$(imageName):$(Build.BuildId)"
+        echo "Image pushed: $(acrName).privatelink.azurecr.io/$(imageName):$(Build.BuildId)"
       displayName: Debug Image Tag
 
 
@@ -79,7 +79,7 @@ stages:
 
               
               kubectl set image deployment/simple-app-dev \
-                simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
+                simple-app=$(acrName).privatelink.azurecr.io/$(imageName):$(Build.BuildId) \
                 -n $(namespace)
 
               kubectl rollout restart deployment simple-app-dev -n $(namespace)
@@ -124,7 +124,7 @@ stages:
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
               kubectl set image deployment/simple-app-prod \
-                simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
+                simple-app=$(acrName).privatelink.azurecr.io/$(imageName):$(Build.BuildId) \
                 -n $(namespace)
 
               kubectl rollout restart deployment simple-app-prod -n $(namespace)
