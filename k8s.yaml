@@ -20,7 +20,7 @@ spec:
 #the name of the container, the image to use, the ports to expose, and environment
       containers:
       - name: simple-app
-        image: pramodconteg.azurecr.io/simple-app:latest
+        image: pramodconteg.azurecr.io/simple-app:20
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
       - name: simple-app
-        image: pramodconteg.azurecr.io/simple-app:latest
+        image: pramodconteg.azurecr.io/simple-app:20
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
