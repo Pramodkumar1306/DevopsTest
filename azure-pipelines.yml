@@ -2,14 +2,14 @@ trigger:
 - main
 
 pool:
-  name: 'Default'  #self hosted agent pool 
+  name: 'pramod'  #self hosted agent pool 
 
 # vaiable  this commonly used in multiple stages, we define them here to avoid repetition and make it easier to update in the future
 variables:
   imageName: 'simple-app'
-  acrName: 'mernacr123321'
-  aksCluster: 'private-aks'
-  resourceGroup: 'Devops'
+  acrName: 'pramodconteg'
+  aksCluster: 'private-app-cluster'
+  resourceGroup: 'pramodDevopsTest'
   namespace: 'default'
 
 stages:
