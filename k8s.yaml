@@ -1,4 +1,3 @@
-#  DEV DEPLOYMENT
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -10,17 +9,12 @@ spec:
       app: simple-app-dev
   template:
     metadata:
-# labels are used to identify and select the pods that belong to this 
-#deployment. In this case, we use "app: simple-app-dev" as the label, which allows 
-#us to target these pods with our Kubernetes service and other operations.
       labels:
         app: simple-app-dev
     spec:
-# The container specification defines the container that will run in the pod. It includes
-#the name of the container, the image to use, the ports to expose, and environment
       containers:
       - name: simple-app
-        image: pramodconteg.azurecr.io/simple-app:dummy
+        image: pramodnewacr.azurecr.io/simple-app:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
@@ -33,12 +27,6 @@ spec:
           value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
 
 ---
-
-#  DEV SERVICE
-# The service definition creates a Kubernetes service that exposes the DEV 
-# deployment. It uses a ClusterIP type, which means it will be accessible within 
-# the cluster. The service selects pods with the label "app: simple-app-dev" and 
-# forwards traffic to port 80, which is mapped to the container's port 4000.
 apiVersion: v1
 kind: Service
 metadata:
@@ -52,13 +40,6 @@ spec:
     targetPort: 4000
 
 ---
-
-#  PROD DEPLOYMENT
-# The PROD deployment is similar to the DEV deployment but is intended for the
-# production environment. It has a different name, label, and environment variable to
-# distinguish it from the DEV deployment. The image is also set to "dummy" as a
-# placeholder, which will be updated during the deployment process in the Azure
-# pipeline.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -75,7 +56,7 @@ spec:
     spec:
       containers:
       - name: simple-app
-        image: pramodconteg.azurecr.io/simple-app:dummy
+        image: pramodnewacr.azurecr.io/simple-app:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
@@ -88,14 +69,6 @@ spec:
           value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
 
 ---
-
-#  PROD SERVICE
-
-# The PROD service is similar to the DEV service but is intended for the production
-# environment. It selects pods with the label "app: simple-app-prod" and forwards
-# traffic to port 80, which is mapped to the container's port 4000. This service will
-# be used to route traffic to the PROD deployment and will be exposed through the
-# ingress controller.
 apiVersion: v1
 kind: Service
 metadata:
@@ -109,16 +82,6 @@ spec:
     targetPort: 4000
 
 ---
-
-#  INGRESS (DEV + PROD)
-
-# The ingress definition creates an ingress resource that routes external traffic to the
-# DEV and PROD services based on the hostnames. It uses the Azure Application Gateway
-# ingress controller, which allows us to manage traffic routing and SSL termination. The
-# ingress has rules for both the DEV and PROD environments, routing traffic to the
-# respective services based on the hostname in the request. It also includes annotations
-# for SSL configuration and health checks to ensure that the application is running
-# smoothly and securely.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -131,14 +94,6 @@ metadata:
 spec:
   ingressClassName: azure-application-gateway
   rules:
-
-  # PROD ROUTE
-
-  # The PROD route is defined to route traffic to the PROD service when the hostname is
-  # "pramodkumar.online". It uses a path-based routing rule to forward requests to the
-  # "simple-app-prod" service on port 80. This allows us to separate traffic
-  # between the DEV and PROD environments and ensures that production traffic is routed
-  # to the correct deployment.
   - host: pramodkumar.online
     http:
       paths:
@@ -149,15 +104,6 @@ spec:
             name: simple-app-prod
             port:
               number: 80
-
-  #  DEV ROUTE
-
-  # The DEV route is defined to route traffic to the DEV service when the hostname is
-  # "dev.pramodkumar.online". It uses a path-based routing rule to forward requests to
-  # the "simple-app-dev" service on port 80. This allows us to access the DEV environment
-  # separately from the PROD environment and ensures that development traffic is routed
-  # to the correct deployment.
-
   - host: dev.pramodkumar.online
     http:
       paths:
