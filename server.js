@@ -185,7 +185,7 @@ function editUser(id,name){
 <body>
 
 <div class="navbar">
-🚀 AKS PRO DASHBOARDs
+🚀 AKS PRO DASHBOARDss
 <span class="badge">LIVE</span>
 </div>
 
