@@ -36,11 +36,10 @@ stages:
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
-          $(Build.BuildId)
           latest
 
     - script: |
-        echo "Image pushed: $(acrName).azurecr.io/$(imageName):$(Build.BuildId)"
+        echo "Image pushed: $(acrName).azurecr.io/$(imageName):latest"
       displayName: Debug Image Tag
 
 
@@ -57,7 +56,6 @@ stages:
           - checkout: self
 
           - script: |
-              echo "Connecting to AKS..."
               az login --identity
 
               az aks get-credentials \
@@ -65,12 +63,10 @@ stages:
                 --name $(aksCluster) \
                 --overwrite-existing
 
-              echo "Deploying DEV..."
-
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
               kubectl set image deployment/simple-app-dev \
-                simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
+                simple-app=$(acrName).azurecr.io/$(imageName):latest \
                 -n $(namespace)
 
               kubectl rollout restart deployment simple-app-dev -n $(namespace)
@@ -92,7 +88,6 @@ stages:
           - checkout: self
 
           - script: |
-              echo "Connecting to AKS..."
               az login --identity
 
               az aks get-credentials \
@@ -100,12 +95,10 @@ stages:
                 --name $(aksCluster) \
                 --overwrite-existing
 
-              echo "Deploying PROD..."
-
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
               kubectl set image deployment/simple-app-prod \
-                simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
+                simple-app=$(acrName).azurecr.io/$(imageName):latest \
                 -n $(namespace)
 
               kubectl rollout restart deployment simple-app-prod -n $(namespace)
