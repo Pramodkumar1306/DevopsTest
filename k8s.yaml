@@ -1,170 +1,125 @@
-#  DEV DEPLOYMENT
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: simple-app-dev
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: simple-app-dev
-  template:
-    metadata:
-# labels are used to identify and select the pods that belong to this 
-#deployment. In this case, we use "app: simple-app-dev" as the label, which allows 
-#us to target these pods with our Kubernetes service and other operations.
-      labels:
-        app: simple-app-dev
-    spec:
-# The container specification defines the container that will run in the pod. It includes
-#the name of the container, the image to use, the ports to expose, and environment
-      containers:
-      - name: simple-app
-        image: pramodconteg.azurecr.io/simple-app:dummy
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 4000
-        env:
-        - name: PORT
-          value: "4000"
-        - name: ENV
-          value: "DEV"
-        - name: DATABASE_URL
-          value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
+trigger:
+- main
 
----
+pool:
+  name: 'pramod'
 
-#  DEV SERVICE
-# The service definition creates a Kubernetes service that exposes the DEV 
-# deployment. It uses a ClusterIP type, which means it will be accessible within 
-# the cluster. The service selects pods with the label "app: simple-app-dev" and 
-# forwards traffic to port 80, which is mapped to the container's port 4000.
-apiVersion: v1
-kind: Service
-metadata:
-  name: simple-app-dev
-spec:
-  type: ClusterIP
-  selector:
-    app: simple-app-dev
-  ports:
-  - port: 80
-    targetPort: 4000
+variables:
+  imageName: 'simple-app'
+  acrName: 'pramodconteg'
+  aksCluster: 'private-app-cluster'
+  resourceGroup: 'pramodDevopsTest'
+  namespace: 'default'
 
----
+stages:
 
-#  PROD DEPLOYMENT
-# The PROD deployment is similar to the DEV deployment but is intended for the
-# production environment. It has a different name, label, and environment variable to
-# distinguish it from the DEV deployment. The image is also set to "dummy" as a
-# placeholder, which will be updated during the deployment process in the Azure
-# pipeline.
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: simple-app-prod
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: simple-app-prod
-  template:
-    metadata:
-      labels:
-        app: simple-app-prod
-    spec:
-      containers:
-      - name: simple-app
-        image: pramodconteg.azurecr.io/simple-app:dummy
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 4000
-        env:
-        - name: PORT
-          value: "4000"
-        - name: ENV
-          value: "PROD"
-        - name: DATABASE_URL
-          value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
+# ================= BUILD =================
+- stage: Build
+  displayName: Build and Push Image
+  jobs:
+  - job: BuildJob
+    steps:
 
----
+    - checkout: self
+      clean: true
 
-#  PROD SERVICE
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '18.x'
 
-# The PROD service is similar to the DEV service but is intended for the production
-# environment. It selects pods with the label "app: simple-app-prod" and forwards
-# traffic to port 80, which is mapped to the container's port 4000. This service will
-# be used to route traffic to the PROD deployment and will be exposed through the
-# ingress controller.
-apiVersion: v1
-kind: Service
-metadata:
-  name: simple-app-prod
-spec:
-  type: ClusterIP
-  selector:
-    app: simple-app-prod
-  ports:
-  - port: 80
-    targetPort: 4000
+    - script: npm install
+      displayName: Install Dependencies
 
----
+    # ✅ FIX: LOGIN TO AZURE + ACR
+    - script: |
+        echo "Logging into Azure..."
+        az login
+        echo "Logging into ACR..."
+        az acr login --name $(acrName)
+      displayName: Azure & ACR Login
 
-#  INGRESS (DEV + PROD)
+    - task: Docker@2
+      displayName: Build and Push Docker Image
+      inputs:
+        containerRegistry: 'ACR-Service-Connection'
+        repository: '$(imageName)'
+        command: 'buildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          $(Build.BuildId)
 
-# The ingress definition creates an ingress resource that routes external traffic to the
-# DEV and PROD services based on the hostnames. It uses the Azure Application Gateway
-# ingress controller, which allows us to manage traffic routing and SSL termination. The
-# ingress has rules for both the DEV and PROD environments, routing traffic to the
-# respective services based on the hostname in the request. It also includes annotations
-# for SSL configuration and health checks to ensure that the application is running
-# smoothly and securely.
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: simple-app-ingress
-  annotations:
-    appgw.ingress.kubernetes.io/backend-port: "4000"
-    appgw.ingress.kubernetes.io/appgw-ssl-certificate: "my-ssl-cer-new"
-    appgw.ingress.kubernetes.io/ssl-redirect: "true"
-    appgw.ingress.kubernetes.io/health-probe-path: "/health"
-spec:
-  ingressClassName: azure-application-gateway
-  rules:
+    - script: |
+        echo "Image pushed: $(acrName).azurecr.io/$(imageName):$(Build.BuildId)"
+      displayName: Debug Image Tag
 
-  # PROD ROUTE
 
-  # The PROD route is defined to route traffic to the PROD service when the hostname is
-  # "pramodkumar.online". It uses a path-based routing rule to forward requests to the
-  # "simple-app-prod" service on port 80. This allows us to separate traffic
-  # between the DEV and PROD environments and ensures that production traffic is routed
-  # to the correct deployment.
-  - host: pramodkumar.online
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: simple-app-prod
-            port:
-              number: 80
+# ================= DEV =================
+- stage: Dev
+  displayName: Deploy to Dev
+  dependsOn: Build
+  jobs:
+  - deployment: DeployDev
+    environment: dev-env
+    strategy:
+      runOnce:
+        deploy:
+          steps:
 
-  #  DEV ROUTE
+          - checkout: self
 
-  # The DEV route is defined to route traffic to the DEV service when the hostname is
-  # "dev.pramodkumar.online". It uses a path-based routing rule to forward requests to
-  # the "simple-app-dev" service on port 80. This allows us to access the DEV environment
-  # separately from the PROD environment and ensures that development traffic is routed
-  # to the correct deployment.
+          - script: |
+              echo "Connecting to AKS..."
 
-  - host: dev.pramodkumar.online
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: simple-app-dev
-            port:
-              number: 80
+              az aks get-credentials \
+                --resource-group $(resourceGroup) \
+                --name $(aksCluster) \
+                --overwrite-existing
+
+              echo "Deploying DEV..."
+
+              kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
+
+              kubectl set image deployment/simple-app-dev \
+                simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
+                -n $(namespace)
+
+              kubectl rollout restart deployment simple-app-dev -n $(namespace)
+              kubectl rollout status deployment simple-app-dev -n $(namespace)
+
+            displayName: Deploy DEV
+
+
+# ================= PROD =================
+- stage: Prod
+  displayName: Deploy to Prod
+  dependsOn: Dev
+  jobs:
+  - deployment: DeployProd
+    environment: prod-env
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+          - checkout: self
+
+          - script: |
+              echo "Connecting to AKS..."
+
+              az aks get-credentials \
+                --resource-group $(resourceGroup) \
+                --name $(aksCluster) \
+                --overwrite-existing
+
+              echo "Deploying PROD..."
+
+              kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
+
+              kubectl set image deployment/simple-app-prod \
+                simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
+                -n $(namespace)
+
+              kubectl rollout restart deployment simple-app-prod -n $(namespace)
+              kubectl rollout status deployment simple-app-prod -n $(namespace)
+
+            displayName: Deploy PROD
