@@ -7,7 +7,7 @@ pool:
 # vaiable  this commonly used in multiple stages, we define them here to avoid repetition and make it easier to update in the future
 variables:
   imageName: 'simple-app'
-  acrName: 'pramodconteg'
+  acrName: 'pramodnewacr'
   aksCluster: 'private-app-cluster'
   resourceGroup: 'pramodDevopsTest'
   namespace: 'default'
@@ -34,7 +34,7 @@ stages:
     - task: Docker@2
       displayName: Build and Push Docker Image
       inputs:
-        containerRegistry: 'ACR-Service-Connection'
+        containerRegistry: 'NEW-ACR-Service-Connection'
         repository: '$(imageName)'
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
