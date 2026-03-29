@@ -38,6 +38,7 @@ stages:
         tags: |
           latest
           $(Build.BuildId)
+        arguments: '--platform linux/arm64'
 
     - script: |
         echo "Image pushed: $(acrName).azurecr.io/$(imageName):$(Build.BuildId)"
