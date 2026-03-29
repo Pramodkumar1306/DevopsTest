@@ -19,7 +19,7 @@ spec:
         ports:
         - containerPort: 4000
 
-        volumeMounts:   # ✅ ADDED
+        volumeMounts:
         - mountPath: /data
           name: app-storage
 
@@ -29,7 +29,7 @@ spec:
         - name: ENV
           value: "DEV"
 
-      volumes:   # ✅ ADDED
+      volumes:
       - name: app-storage
         persistentVolumeClaim:
           claimName: app-pvc
@@ -53,7 +53,7 @@ kind: Deployment
 metadata:
   name: simple-app-prod
 spec:
-  replicas: 1   # ⚠️ CHANGED (IMPORTANT for PVC)
+  replicas: 1
   selector:
     matchLabels:
       app: simple-app-prod
@@ -69,7 +69,7 @@ spec:
         ports:
         - containerPort: 4000
 
-        volumeMounts:   # ✅ ADDED
+        volumeMounts:
         - mountPath: /data
           name: app-storage
 
@@ -78,10 +78,8 @@ spec:
           value: "4000"
         - name: ENV
           value: "PROD"
-        - name: DATABASE_URL
-          value: ""
 
-      volumes:   # ✅ ADDED
+      volumes:
       - name: app-storage
         persistentVolumeClaim:
           claimName: app-pvc
@@ -112,6 +110,8 @@ metadata:
 spec:
   ingressClassName: azure-application-gateway
   rules:
+
+  # ✅ PROD DOMAIN
   - host: pramodkumar.online
     http:
       paths:
@@ -122,10 +122,30 @@ spec:
             name: simple-app-prod
             port:
               number: 80
+
+      # ✅ OPTIONAL PATH ROUTING (future use)
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: simple-app-prod
+            port:
+              number: 80
+
+  # ✅ DEV DOMAIN
   - host: dev.pramodkumar.online
     http:
       paths:
       - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: simple-app-dev
+            port:
+              number: 80
+
+      # ✅ OPTIONAL PATH ROUTING
+      - path: /api
         pathType: Prefix
         backend:
           service:

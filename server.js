@@ -5,6 +5,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ⭐ Handle path-based routing (/api)
+app.use((req, res, next) => {
+    if (req.url.startsWith("/api")) {
+        req.url = req.url.replace("/api", "") || "/";
+    }
+    next();
+});
+
 const DATA_FILE = "/data/users.json";
 
 let users = [];
@@ -26,14 +34,16 @@ function saveData() {
     fs.writeFileSync(DATA_FILE, JSON.stringify(users));
 }
 
+// ✅ Home Page
 app.get("/", (req, res) => {
     let rows = users.map(user => `
     <tr>
         <td>${user.id}</td>
         <td>${user.name}</td>
         <td>
-            <form method="POST" action="/delete/${user.id}" style="display:inline;">
-                <button>Delete</button>
+            <form method="POST" action="/add" style="display:inline;">
+                <input type="hidden" name="id" value="${user.id}" />
+                <button formaction="/delete/${user.id}">Delete</button>
             </form>
             <button onclick="editUser(${user.id}, '${user.name}')">Edit</button>
         </td>
@@ -85,7 +95,7 @@ ${rows}
 app.post("/add", (req, res) => {
     const { name } = req.body;
     users.push({ id: idCounter++, name });
-    saveData();   // 🔥 IMPORTANT
+    saveData();
     res.redirect("/");
 });
 
@@ -93,7 +103,7 @@ app.post("/add", (req, res) => {
 app.post("/update", (req, res) => {
     const { id, name } = req.body;
     users = users.map(u => u.id == id ? { ...u, name } : u);
-    saveData();   // 🔥 IMPORTANT
+    saveData();
     res.redirect("/");
 });
 
@@ -101,14 +111,16 @@ app.post("/update", (req, res) => {
 app.post("/delete/:id", (req, res) => {
     const id = req.params.id;
     users = users.filter(u => u.id != id);
-    saveData();   // 🔥 IMPORTANT
+    saveData();
     res.redirect("/");
 });
 
+// ✅ Health check (for ingress)
 app.get("/health", (req, res) => {
     res.send("OK");
 });
 
+// ✅ Start server
 app.listen(4000, "0.0.0.0", () => {
     console.log("Server running on port 4000");
 });
