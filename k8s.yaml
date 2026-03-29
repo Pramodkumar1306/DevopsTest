@@ -107,6 +107,7 @@ metadata:
     appgw.ingress.kubernetes.io/appgw-ssl-certificate: "my-ssl-cer-new"
     appgw.ingress.kubernetes.io/ssl-redirect: "true"
     appgw.ingress.kubernetes.io/health-probe-path: "/health"
+    appgw.ingress.kubernetes.io/rewrite-target: "/"   # ⭐ IMPORTANT FIX
 spec:
   ingressClassName: azure-application-gateway
   rules:
@@ -123,7 +124,6 @@ spec:
             port:
               number: 80
 
-      # ✅ OPTIONAL PATH ROUTING (future use)
       - path: /api
         pathType: Prefix
         backend:
@@ -144,7 +144,6 @@ spec:
             port:
               number: 80
 
-      # ✅ OPTIONAL PATH ROUTING
       - path: /api
         pathType: Prefix
         backend:
