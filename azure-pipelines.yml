@@ -37,9 +37,10 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           latest
+          $(Build.BuildId)
 
     - script: |
-        echo "Image pushed: $(acrName).azurecr.io/$(imageName):latest"
+        echo "Image pushed: $(acrName).azurecr.io/$(imageName):$(Build.BuildId)"
       displayName: Debug Image Tag
 
 
@@ -66,7 +67,7 @@ stages:
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
               kubectl set image deployment/simple-app-dev \
-                simple-app=$(acrName).azurecr.io/$(imageName):latest \
+                simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
                 -n $(namespace)
 
               kubectl rollout restart deployment simple-app-dev -n $(namespace)
@@ -98,7 +99,7 @@ stages:
               kubectl apply -f $(System.DefaultWorkingDirectory)/k8s.yaml -n $(namespace)
 
               kubectl set image deployment/simple-app-prod \
-                simple-app=$(acrName).azurecr.io/$(imageName):latest \
+                simple-app=$(acrName).azurecr.io/$(imageName):$(Build.BuildId) \
                 -n $(namespace)
 
               kubectl rollout restart deployment simple-app-prod -n $(namespace)
