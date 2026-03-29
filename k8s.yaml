@@ -18,13 +18,21 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
+
+        volumeMounts:   # ✅ ADDED
+        - mountPath: /data
+          name: app-storage
+
         env:
         - name: PORT
           value: "4000"
         - name: ENV
           value: "DEV"
-        # - name: DATABASE_URL
-        #   value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
+
+      volumes:   # ✅ ADDED
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: app-pvc
 
 ---
 apiVersion: v1
@@ -45,7 +53,7 @@ kind: Deployment
 metadata:
   name: simple-app-prod
 spec:
-  replicas: 2
+  replicas: 1   # ⚠️ CHANGED (IMPORTANT for PVC)
   selector:
     matchLabels:
       app: simple-app-prod
@@ -60,6 +68,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
+
+        volumeMounts:   # ✅ ADDED
+        - mountPath: /data
+          name: app-storage
+
         env:
         - name: PORT
           value: "4000"
@@ -67,6 +80,11 @@ spec:
           value: "PROD"
         - name: DATABASE_URL
           value: ""
+
+      volumes:   # ✅ ADDED
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: app-pvc
 
 ---
 apiVersion: v1
