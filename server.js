@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ⭐ Handle path-based routing (/api)
+// ⭐ Handle /api prefix (Ingress path-based)
 app.use((req, res, next) => {
     if (req.url.startsWith("/api")) {
         req.url = req.url.replace("/api", "") || "/";
@@ -18,109 +18,97 @@ const DATA_FILE = "/data/users.json";
 let users = [];
 let idCounter = 1;
 
-// ✅ Load data from PVC when app starts
+// Load data
 if (fs.existsSync(DATA_FILE)) {
     try {
         users = JSON.parse(fs.readFileSync(DATA_FILE));
         idCounter = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-    } catch (err) {
-        console.log("Error reading file, starting fresh");
+    } catch {
         users = [];
     }
 }
 
-// ✅ Save data to PVC
+// Save data
 function saveData() {
     fs.writeFileSync(DATA_FILE, JSON.stringify(users));
 }
 
-// ✅ Home Page
+// 🏠 HOME PAGE
 app.get("/", (req, res) => {
     let rows = users.map(user => `
     <tr>
         <td>${user.id}</td>
         <td>${user.name}</td>
         <td>
-            <form method="POST" action="/add" style="display:inline;">
-                <input type="hidden" name="id" value="${user.id}" />
-                <button formaction="/delete/${user.id}">Delete</button>
+            <a href="/update?id=${user.id}">Edit</a>
+            <form method="POST" action="/delete/${user.id}" style="display:inline;">
+                <button>Delete</button>
             </form>
-            <button onclick="editUser(${user.id}, '${user.name}')">Edit</button>
         </td>
     </tr>
     `).join("");
 
     res.send(`
-<!DOCTYPE html>
-<html>
-<head>
-<title>Simple App</title>
-<script>
-function editUser(id,name){
-    document.getElementById("editId").value=id;
-    document.getElementById("editName").value=name;
-}
-</script>
-</head>
-<body>
-
-<h2>Add User</h2>
-<form method="POST" action="/add">
-    <input type="text" name="name" required />
-    <button>Add</button>
-</form>
-
-<h2>Update User</h2>
-<form method="POST" action="/update">
-    <input type="hidden" id="editId" name="id"/>
-    <input type="text" id="editName" name="name" required />
-    <button>Update</button>
-</form>
-
-<table border="1">
-<tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Action</th>
-</tr>
-${rows}
-</table>
-
-</body>
-</html>
-`);
+    <h1>Home</h1>
+    <a href="/add">Add User</a>
+    <table border="1">
+    <tr><th>ID</th><th>Name</th><th>Action</th></tr>
+    ${rows}
+    </table>
+    `);
 });
 
-// ✅ ADD
+// ➕ ADD PAGE
+app.get("/add", (req, res) => {
+    res.send(`
+    <h1>Add User</h1>
+    <form method="POST" action="/add">
+        <input name="name" required />
+        <button>Add</button>
+    </form>
+    <a href="/">Back</a>
+    `);
+});
+
 app.post("/add", (req, res) => {
-    const { name } = req.body;
-    users.push({ id: idCounter++, name });
+    users.push({ id: idCounter++, name: req.body.name });
     saveData();
     res.redirect("/");
 });
 
-// ✅ UPDATE
+// ✏️ UPDATE PAGE
+app.get("/update", (req, res) => {
+    const user = users.find(u => u.id == req.query.id);
+
+    res.send(`
+    <h1>Update User</h1>
+    <form method="POST" action="/update">
+        <input type="hidden" name="id" value="${user.id}" />
+        <input name="name" value="${user.name}" required />
+        <button>Update</button>
+    </form>
+    <a href="/">Back</a>
+    `);
+});
+
 app.post("/update", (req, res) => {
-    const { id, name } = req.body;
-    users = users.map(u => u.id == id ? { ...u, name } : u);
+    users = users.map(u =>
+        u.id == req.body.id ? { ...u, name: req.body.name } : u
+    );
     saveData();
     res.redirect("/");
 });
 
-// ✅ DELETE
+// ❌ DELETE
 app.post("/delete/:id", (req, res) => {
-    const id = req.params.id;
-    users = users.filter(u => u.id != id);
+    users = users.filter(u => u.id != req.params.id);
     saveData();
     res.redirect("/");
 });
 
-// ✅ Health check (for ingress)
-app.get("/health", (req, res) => {
-    res.send("OK");
-});
+// ❤️ Health
+app.get("/health", (req, res) => res.send("OK"));
 
-// ✅ Start server
 app.listen(4000, "0.0.0.0", () => {
     console.log("Server running on port 4000");
 });
