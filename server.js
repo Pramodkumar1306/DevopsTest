@@ -45,7 +45,7 @@ function editUser(id,name){
 <form method="POST" action="/update">
     <input type="hidden" id="editId" name="id"/>
     <input type="text" id="editName" name="name" required />
-    <button>Update</button>
+    <button>Updates</button>
 </form>
 
 <table border="1">
