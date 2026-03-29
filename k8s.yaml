@@ -23,8 +23,8 @@ spec:
           value: "4000"
         - name: ENV
           value: "DEV"
-        - name: DATABASE_URL
-          value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
+        # - name: DATABASE_URL
+        #   value: postgres://pammu:pammu123@10.0.0.40:5432/testdb
 
 ---
 apiVersion: v1
