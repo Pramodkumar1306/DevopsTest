@@ -32,7 +32,7 @@ spec:
       volumes:
       - name: app-storage
         persistentVolumeClaim:
-          claimName: app-pvc
+          claimName: app-pvc   # ✅ DEV uses existing PVC
 
 ---
 apiVersion: v1
@@ -82,7 +82,7 @@ spec:
       volumes:
       - name: app-storage
         persistentVolumeClaim:
-          claimName: app-pvc
+          claimName: prod-pvc   # ✅ PROD uses separate PVC
 
 ---
 apiVersion: v1
@@ -107,7 +107,7 @@ metadata:
     appgw.ingress.kubernetes.io/appgw-ssl-certificate: "my-ssl-cer-new"
     appgw.ingress.kubernetes.io/ssl-redirect: "true"
     appgw.ingress.kubernetes.io/health-probe-path: "/health"
-    appgw.ingress.kubernetes.io/rewrite-target: "/"   # ⭐ IMPORTANT FIX
+    appgw.ingress.kubernetes.io/rewrite-target: "/"
 spec:
   ingressClassName: azure-application-gateway
   rules:
