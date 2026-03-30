@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Handle /api prefix (Ingress path-based routing)
+// ✅ Handle /api prefix
 app.use((req, res, next) => {
     if (req.url.startsWith("/api")) {
         req.url = req.url.replace("/api", "") || "/";
@@ -18,7 +18,7 @@ const DATA_FILE = "/data/users.json";
 let users = [];
 let idCounter = 1;
 
-// ✅ Load data from PVC
+// ✅ Load data
 if (fs.existsSync(DATA_FILE)) {
     try {
         users = JSON.parse(fs.readFileSync(DATA_FILE));
@@ -37,7 +37,6 @@ function saveData() {
 // ==========================
 // 🏠 HOME PAGE
 // ==========================
-//
 app.get("/", (req, res) => {
     let userCards = users.map(user => `
         <div style="background:#1e1e2f;padding:20px;border-radius:12px;margin:10px;color:white;display:flex;justify-content:space-between;">
@@ -46,7 +45,7 @@ app.get("/", (req, res) => {
                 <small>ID: ${user.id}</small>
             </div>
             <div>
-                <a href="/update?id=${user.id}&name=UpdatedUser"
+                <a href="/edit/${user.id}"
                 style="background:#3b82f6;color:white;padding:5px 10px;border-radius:5px;text-decoration:none;margin-right:5px;">
                     Edit
                 </a>
@@ -82,20 +81,67 @@ app.get("/", (req, res) => {
 
 //
 // ==========================
-// ➕ ADD USER PAGE
+// ➕ ADD PAGE
 // ==========================
-//
 app.get("/add", (req, res) => {
     res.send(`
     <html>
     <body style="background:#0f172a;color:white;text-align:center;padding-top:100px;">
-
         <h2>Add New User</h2>
 
         <form method="POST" action="/add">
             <input name="name" placeholder="Enter name" required />
             <br><br>
             <button>Create</button>
+        </form>
+
+        <br>
+        <a href="/">⬅ Back</a>
+    </body>
+    </html>
+    `);
+});
+
+//
+// ==========================
+// ➕ ADD LOGIC
+// ==========================
+app.post("/add", (req, res) => {
+    users.push({ id: idCounter++, name: req.body.name });
+    saveData();
+    res.redirect("/");
+});
+
+//
+// ==========================
+// ❌ DELETE
+// ==========================
+app.post("/delete/:id", (req, res) => {
+    users = users.filter(u => u.id != req.params.id);
+    saveData();
+    res.redirect("/");
+});
+
+//
+// ==========================
+// ✏️ EDIT PAGE (FORM SHOW)
+// ==========================
+app.get("/edit/:id", (req, res) => {
+    const user = users.find(u => u.id == req.params.id);
+
+    if (!user) return res.send("User not found");
+
+    res.send(`
+    <html>
+    <body style="background:#1e293b;color:white;text-align:center;padding-top:100px;">
+
+        <h2>Edit User</h2>
+
+        <form method="POST" action="/update">
+            <input type="hidden" name="id" value="${user.id}" />
+            <input name="name" value="${user.name}" required />
+            <br><br>
+            <button>Update</button>
         </form>
 
         <br>
@@ -108,60 +154,27 @@ app.get("/add", (req, res) => {
 
 //
 // ==========================
-// ➕ ADD USER LOGIC
+// ✏️ UPDATE LOGIC
 // ==========================
-//
-app.post("/add", (req, res) => {
-    users.push({ id: idCounter++, name: req.body.name });
-    saveData();
-    res.redirect("/");
-});
-
-//
-// ==========================
-// ❌ DELETE USER
-// ==========================
-//
-app.post("/delete/:id", (req, res) => {
-    users = users.filter(u => u.id != req.params.id);
-    saveData();
-    res.redirect("/");
-});
-
-//
-// ==========================
-// ✏️ UPDATE USING URL
-// ==========================
-//
-app.get("/update", (req, res) => {
-    const { id, name } = req.query;
-
-    if (!id || !name) {
-        return res.send("❌ Missing id or name");
-    }
+app.post("/update", (req, res) => {
+    const { id, name } = req.body;
 
     users = users.map(u =>
         u.id == id ? { ...u, name } : u
     );
 
     saveData();
-
-    res.send(`
-        <h2>✅ User Updated</h2>
-        <a href="/">Go Back</a>
-    `);
+    res.redirect("/");
 });
 
 //
 // ==========================
-// 📊 SYSTEM HEALTH PAGE
+// 📊 SYSTEM HEALTH
 // ==========================
-//
 app.get("/health-ui", (req, res) => {
     res.send(`
     <html>
     <body style="background:#064e3b;color:white;text-align:center;padding:40px;">
-
         <h1>SYSTEM OPERATIONAL</h1>
 
         <div>
@@ -179,7 +192,6 @@ app.get("/health-ui", (req, res) => {
 
         <br>
         <a href="/">⬅ Back</a>
-
     </body>
     </html>
     `);
@@ -195,7 +207,7 @@ app.get("/health", (req, res) => {
 
 //
 // ==========================
-// 🚀 SERVER START
+// 🚀 START
 // ==========================
 app.listen(4000, "0.0.0.0", () => {
     console.log("🚀 Server running on port 4000");
