@@ -14,25 +14,18 @@ spec:
     spec:
       containers:
       - name: simple-app
-        image: pramodnewacr.azurecr.io/simple-app:dev   # ✅ dummy (will be overridden)
+        image: pramodnewacr.azurecr.io/simple-app:dev
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
-
-        volumeMounts:
-        - mountPath: /data
-          name: app-storage
 
         env:
         - name: PORT
           value: "4000"
         - name: ENV
           value: "DEV"
-
-      volumes:
-      - name: app-storage
-        persistentVolumeClaim:
-          claimName: app-pvc
+        - name: DATABASE_URL
+          value: "postgres://user:password@db-host:5432/devdb"
 
 ---
 apiVersion: v1
@@ -64,25 +57,18 @@ spec:
     spec:
       containers:
       - name: simple-app
-        image: pramodnewacr.azurecr.io/simple-app:prod   # ✅ dummy (will be overridden)
+        image: pramodnewacr.azurecr.io/simple-app:prod
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
-
-        volumeMounts:
-        - mountPath: /data
-          name: app-storage
 
         env:
         - name: PORT
           value: "4000"
         - name: ENV
           value: "PROD"
-
-      volumes:
-      - name: app-storage
-        persistentVolumeClaim:
-          claimName: prod-pvc
+        - name: DATABASE_URL
+          value: "postgres://user:password@db-host:5432/proddb"
 
 ---
 apiVersion: v1
@@ -123,26 +109,10 @@ spec:
             port:
               number: 80
 
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: simple-app-prod
-            port:
-              number: 80
-
   - host: dev.pramodkumar.online
     http:
       paths:
       - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: simple-app-dev
-            port:
-              number: 80
-
-      - path: /api
         pathType: Prefix
         backend:
           service:
