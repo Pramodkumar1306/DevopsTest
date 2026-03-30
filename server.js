@@ -66,7 +66,7 @@ app.get("/", (req, res) => {
         <h1>User Matrix</h1>
 
         <div style="margin-top:20px;">
-            <a href="/add" style="padding:10px;background:#06b6d4;color:white;">+ Add Userssssss</a>
+            <a href="/add" style="padding:10px;background:#06b6d4;color:white;">+ Add User</a>
             <a href="/health-ui" style="padding:10px;background:#22c55e;color:white;margin-left:10px;">System Health</a>
         </div>
 
