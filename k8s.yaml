@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: simple-app
-        image: pramodnewacr.azurecr.io/simple-app:latest
+        image: pramodnewacr.azurecr.io/simple-app:dev   # ✅ dummy (will be overridden)
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
@@ -32,7 +32,7 @@ spec:
       volumes:
       - name: app-storage
         persistentVolumeClaim:
-          claimName: app-pvc   # ✅ DEV uses existing PVC
+          claimName: app-pvc
 
 ---
 apiVersion: v1
@@ -64,7 +64,7 @@ spec:
     spec:
       containers:
       - name: simple-app
-        image: pramodnewacr.azurecr.io/simple-app:latest
+        image: pramodnewacr.azurecr.io/simple-app:prod   # ✅ dummy (will be overridden)
         imagePullPolicy: Always
         ports:
         - containerPort: 4000
@@ -82,7 +82,7 @@ spec:
       volumes:
       - name: app-storage
         persistentVolumeClaim:
-          claimName: prod-pvc   # ✅ PROD uses separate PVC
+          claimName: prod-pvc
 
 ---
 apiVersion: v1
@@ -112,7 +112,6 @@ spec:
   ingressClassName: azure-application-gateway
   rules:
 
-  # ✅ PROD DOMAIN
   - host: pramodkumar.online
     http:
       paths:
@@ -132,7 +131,6 @@ spec:
             port:
               number: 80
 
-  # ✅ DEV DOMAIN
   - host: dev.pramodkumar.online
     http:
       paths:
