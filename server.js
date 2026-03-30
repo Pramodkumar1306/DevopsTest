@@ -35,7 +35,7 @@ function saveData() {
 
 //
 // ==========================
-// 🏠 HOME PAGE (User Matrix)
+// 🏠 HOME PAGE
 // ==========================
 //
 app.get("/", (req, res) => {
@@ -46,8 +46,15 @@ app.get("/", (req, res) => {
                 <small>ID: ${user.id}</small>
             </div>
             <div>
+                <a href="/update?id=${user.id}&name=UpdatedUser"
+                style="background:#3b82f6;color:white;padding:5px 10px;border-radius:5px;text-decoration:none;margin-right:5px;">
+                    Edit
+                </a>
+
                 <form method="POST" action="/delete/${user.id}" style="display:inline;">
-                    <button style="background:red;color:white;padding:5px 10px;border:none;border-radius:5px;">Delete</button>
+                    <button style="background:red;color:white;padding:5px 10px;border:none;border-radius:5px;">
+                        Delete
+                    </button>
                 </form>
             </div>
         </div>
@@ -58,11 +65,10 @@ app.get("/", (req, res) => {
     <body style="background:linear-gradient(135deg,#4c1d95,#1e1b4b);color:white;font-family:sans-serif;padding:20px;">
 
         <h1>User Matrix</h1>
-        <p>Futuristic User Management System</p>
 
         <div style="margin-top:20px;">
-            <a href="/add" style="padding:10px 15px;background:#06b6d4;color:white;border-radius:6px;text-decoration:none;">+ Add User</a>
-            <a href="/health-ui" style="padding:10px 15px;background:#22c55e;color:white;border-radius:6px;text-decoration:none;margin-left:10px;">System Health</a>
+            <a href="/add" style="padding:10px;background:#06b6d4;color:white;">+ Add User</a>
+            <a href="/health-ui" style="padding:10px;background:#22c55e;color:white;margin-left:10px;">System Health</a>
         </div>
 
         <div style="margin-top:30px;">
@@ -82,23 +88,18 @@ app.get("/", (req, res) => {
 app.get("/add", (req, res) => {
     res.send(`
     <html>
-    <body style="background:#0f172a;color:white;font-family:sans-serif;text-align:center;padding-top:100px;">
+    <body style="background:#0f172a;color:white;text-align:center;padding-top:100px;">
 
-        <div style="background:#1e293b;padding:30px;border-radius:12px;width:300px;margin:auto;">
-            <h2>Add New User</h2>
+        <h2>Add New User</h2>
 
-            <form method="POST" action="/add">
-                <input name="name" placeholder="Enter user name" required 
-                style="padding:10px;width:100%;margin:10px 0;border-radius:6px;border:none;" />
-                
-                <button style="padding:10px;width:100%;background:#8b5cf6;color:white;border:none;border-radius:6px;">
-                    Create
-                </button>
-            </form>
+        <form method="POST" action="/add">
+            <input name="name" placeholder="Enter name" required />
+            <br><br>
+            <button>Create</button>
+        </form>
 
-            <br>
-            <a href="/" style="color:#38bdf8;">⬅ Back</a>
-        </div>
+        <br>
+        <a href="/">⬅ Back</a>
 
     </body>
     </html>
@@ -129,33 +130,55 @@ app.post("/delete/:id", (req, res) => {
 
 //
 // ==========================
+// ✏️ UPDATE USING URL
+// ==========================
+//
+app.get("/update", (req, res) => {
+    const { id, name } = req.query;
+
+    if (!id || !name) {
+        return res.send("❌ Missing id or name");
+    }
+
+    users = users.map(u =>
+        u.id == id ? { ...u, name } : u
+    );
+
+    saveData();
+
+    res.send(`
+        <h2>✅ User Updated</h2>
+        <a href="/">Go Back</a>
+    `);
+});
+
+//
+// ==========================
 // 📊 SYSTEM HEALTH PAGE
 // ==========================
 //
 app.get("/health-ui", (req, res) => {
     res.send(`
     <html>
-    <body style="background:#064e3b;color:white;font-family:sans-serif;text-align:center;padding:40px;">
+    <body style="background:#064e3b;color:white;text-align:center;padding:40px;">
 
         <h1>SYSTEM OPERATIONAL</h1>
-        <p>All Systems Nominal</p>
 
-        <div style="margin-top:30px;">
-            <div>⚡ Uptime: 9822h</div>
-            <div>🛡 Latency: 20ms</div>
-            <div>📊 Throughput: 884/s</div>
+        <div>
+            <h3>Uptime: 9822h</h3>
+            <h3>Latency: 20ms</h3>
+            <h3>Throughput: 884/s</h3>
         </div>
 
-        <div style="margin-top:30px;">
+        <div>
             <p>Database: ✅ Operational</p>
             <p>API Gateway: ✅ Running</p>
             <p>Auth Service: ✅ Active</p>
-            <p>Cache Layer: ✅ Healthy</p>
-            <p>Load Balancer: ✅ Operational</p>
+            <p>Cache: ✅ Healthy</p>
         </div>
 
         <br>
-        <a href="/" style="color:#38bdf8;">⬅ Back to Dashboard</a>
+        <a href="/">⬅ Back</a>
 
     </body>
     </html>
@@ -164,7 +187,7 @@ app.get("/health-ui", (req, res) => {
 
 //
 // ==========================
-// ❤️ HEALTH CHECK (for Ingress)
+// ❤️ HEALTH CHECK
 // ==========================
 app.get("/health", (req, res) => {
     res.send("OK");
